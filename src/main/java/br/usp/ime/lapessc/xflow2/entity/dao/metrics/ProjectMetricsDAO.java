@@ -1,0 +1,169 @@
+/* 
+ * 
+ * XFlow
+ * _______
+ * 
+ *  
+ *  (C) Copyright 2010, by Universidade Federal do Pará (UFPA), Francisco Santana, Jean Costa, Pedro Treccani and Cleidson de Souza.
+ * 
+ *  This file is part of XFlow.
+ *
+ *  XFlow is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  XFlow is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with XFlow.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ *  ======================
+ *  ProjectMetricsDAO.java
+ *  ======================
+ *  
+ *  Original Author: Francisco Santana;
+ *  Contributor(s):  -;
+ *  
+ */
+
+package br.usp.ime.lapessc.xflow2.entity.dao.metrics;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import br.usp.ime.lapessc.xflow2.entity.Author;
+import br.usp.ime.lapessc.xflow2.entity.Commit;
+import br.usp.ime.lapessc.xflow2.entity.Metrics;
+import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
+import br.usp.ime.lapessc.xflow2.metrics.project.ProjectMetricValues;
+
+public class ProjectMetricsDAO extends MetricModelDAO<ProjectMetricValues> {
+
+	@Override
+	public ProjectMetricValues findById(final Class<ProjectMetricValues> clazz, final long id) throws DatabaseException {
+		return super.findById(clazz, id);
+	}
+
+	@Override
+	public boolean insert(final ProjectMetricValues entity) throws DatabaseException {
+		return super.insert(entity);
+	}
+
+	@Override
+	public boolean remove(final ProjectMetricValues entity) throws DatabaseException {
+		return super.remove(entity);
+	}
+
+	@Override
+	public boolean update(final ProjectMetricValues entity) throws DatabaseException {
+		return super.update(entity);
+	}
+	
+	@Override
+	protected ProjectMetricValues findUnique(final Class<ProjectMetricValues> clazz, final String query, final Object[]... parameters) throws DatabaseException {
+		return super.findUnique(clazz, query, parameters);
+	}
+
+	@Override
+	protected Collection<ProjectMetricValues> findByQuery(final Class<ProjectMetricValues> clazz, final String query, final Object[]... parameters) throws DatabaseException {
+		return super.findByQuery(clazz, query, parameters);
+	}
+
+	@Override
+	public Collection<ProjectMetricValues> findAll(final Class<? extends ProjectMetricValues> myClass) throws DatabaseException {
+		return super.findAll(myClass);
+	}
+
+	public ArrayList<ProjectMetricValues> getProjectMetricValues(final Metrics metrics) throws DatabaseException {
+		final String query = "select p from project_metrics p where p.associatedMetricsObject = :metrics";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		
+		return (ArrayList<ProjectMetricValues>) findByQuery(ProjectMetricValues.class, query, parameter1);
+	}
+	
+	public ProjectMetricValues findProjectMetricValuesByEntry(final Metrics metrics, final Commit entry) throws DatabaseException {
+		final String query = "select p from project_metrics p where p.associatedMetricsObject = :metrics and p.entry = :entry";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		final Object[] parameter2 = new Object[]{"entry", entry};
+		
+		return findUnique(ProjectMetricValues.class, query, parameter1, parameter2);
+	}
+	
+	public double getDensityMetricValueByEntry(final Metrics metrics, final Commit entry) throws DatabaseException {
+		final String query = "select p from project_metrics p where p.associatedMetricsObject = :metrics and p.entry = :entry";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		final Object[] parameter2 = new Object[]{"entry", entry};
+		
+		return findUnique(ProjectMetricValues.class, query, parameter1, parameter2).getDensity();
+	}
+
+	public double getDensityAverageValue(final Metrics metrics) throws DatabaseException{
+		final String query = "select avg(p.density) from project_metrics p where p.associatedMetricsObject = :metrics";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		
+		return getDoubleValueByQuery(query, parameter1);
+	}
+
+	public double getDensityDeviationValue(final Metrics metrics) throws DatabaseException{
+		final String query = "select stddev(p.density) from project_metrics p where p.associatedMetricsObject = :metrics";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		
+		return getDoubleValueByQuery(query, parameter1);
+	}
+
+	public double getClusterMetricValueByEntry(final Metrics metrics, final Commit entry) throws DatabaseException {
+		final String query = "select p from project_metrics p where p.associatedMetricsObject = :metrics and p.entry = :entry";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		final Object[] parameter2 = new Object[]{"entry", entry};
+		
+		return findUnique(ProjectMetricValues.class, query, parameter1, parameter2).getClusterCoefficient();
+	}
+	
+	public double getClusterCoefficientAverageValue(final Metrics metrics) throws DatabaseException{
+		final String query = "select avg(p.clusterCoefficient) from project_metrics p where p.associatedMetricsObject = :metrics";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		
+		return getDoubleValueByQuery(query, parameter1);
+	}
+
+	public double getClusterCoefficientDeviationValue(final Metrics metrics) throws DatabaseException{
+		final String query = "select stddev(p.clusterCoefficient) from project_metrics p where p.associatedMetricsObject = :metrics";
+		final Object[] parameter1 = new Object[]{"metrics", metrics};
+		
+		return getDoubleValueByQuery(query, parameter1);
+	}
+
+	@Override
+	public List<ProjectMetricValues> getAllMetricsTable(Metrics metrics) throws DatabaseException {
+		final String query = "select values from entry_metrics values where values.associatedMetricsObject = :metrics";
+		final Object[] parameter1 = new Object[]{"metricsSession", metrics};
+		
+		return (List<ProjectMetricValues>) findByQuery(ProjectMetricValues.class, query, parameter1);
+	}
+	
+	@Override
+	public List<ProjectMetricValues> getMetricsTableByAuthor(Metrics metrics, Author author) throws DatabaseException {
+		final String query = "select values from entry_metrics values where values.associatedMetricsObject = :metrics and values.author.id = authorID";
+		final Object[] parameter1 = new Object[]{"metricsSession", metrics};
+		final Object[] parameter2 = new Object[]{"author", author.getId()};
+		
+		return (List<ProjectMetricValues>) findByQuery(ProjectMetricValues.class, query, parameter1, parameter2);
+	}
+
+	@Override
+	public List<ProjectMetricValues> getMetricsTableFromAuthorByEntries(Metrics metrics, Author author, Commit initialEntry, Commit finalEntry) throws DatabaseException {
+		final String query = "select values from entry_metrics values where values.associatedMetricsObject = :metrics and values.author.id = authorID and values.entry.id between initialEntryID and finalEntryID";
+		final Object[] parameter1 = new Object[]{"metricsSession", metrics};
+		final Object[] parameter2 = new Object[]{"authorID", author.getId()};
+		final Object[] parameter3 = new Object[]{"initialEntryID", initialEntry.getId()};
+		final Object[] parameter4 = new Object[]{"finalEntryID", finalEntry.getId()};
+		
+		return (List<ProjectMetricValues>) findByQuery(ProjectMetricValues.class, query, parameter1, parameter2, parameter3, parameter4);
+	}
+}
