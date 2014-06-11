@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 public class CoordinationRequirementsGraph extends DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> {
 	
 	public CoordinationRequirementsGraph() {
-		//Empty constructor.
 		this.setDirectedDependency(false);
 		this.setType(DependencyGraphType.COORDINATION_REQUIREMENTS.getValue());
 	}
