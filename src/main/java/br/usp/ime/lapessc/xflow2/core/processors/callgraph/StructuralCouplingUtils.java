@@ -25,7 +25,7 @@ public class StructuralCouplingUtils {
 					new DependencySet<FileDependencyObject, FileDependencyObject>();
 			
 			//Sets the supplier
-			dependencySet.setDependedObject(supplier);
+			dependencySet.setSupplier(supplier);
 			
 			//Now fills the dependencyMap for the supplier
 			Map<FileDependencyObject, Integer> dependencyMap = 
@@ -48,7 +48,7 @@ public class StructuralCouplingUtils {
 			dependencyMap.put(supplier, 1);
 			
 			//Sets the dependenciesMap in the dependencySet
-			dependencySet.setDependenciesMap(dependencyMap);
+			dependencySet.setClientsMap(dependencyMap);
 			
 			//Adds the dependencySet to the set of dependencySets
 			setOfDependencySets.add(dependencySet);
@@ -72,7 +72,7 @@ public class StructuralCouplingUtils {
 					new DependencySet<FileDependencyObject, FileDependencyObject>();
 			
 			//Sets the supplier
-			dependencySet.setDependedObject(supplier);
+			dependencySet.setSupplier(supplier);
 			
 			//Now fills the dependencyMap for the supplier
 			Map<FileDependencyObject, Integer> dependencyMap = 
@@ -92,7 +92,7 @@ public class StructuralCouplingUtils {
 			dependencyMap.put(supplier, 1);
 			
 			//Sets the dependenciesMap in the dependencySet
-			dependencySet.setDependenciesMap(dependencyMap);
+			dependencySet.setClientsMap(dependencyMap);
 			
 			//Adds the dependencySet to the set of dependencySets
 			setOfDependencySets.add(dependencySet);

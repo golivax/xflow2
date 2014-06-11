@@ -3,28 +3,30 @@ package br.usp.ime.lapessc.xflow2.core.processors.cochanges;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import br.usp.ime.lapessc.xflow2.core.AnalysisFactory;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
-import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
-import br.usp.ime.lapessc.xflow2.entity.DependencySet;
+import br.usp.ime.lapessc.xflow2.entity.CoChangeHistory;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
+import br.usp.ime.lapessc.xflow2.entity.DependencySet;
+import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.RawDependency;
+import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencySetDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
 import br.usp.ime.lapessc.xflow2.entity.representation.Converter;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.MatrixFactory;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
+import edu.uci.ics.jung.graph.UndirectedGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 
-//TODO: AINDA TEM COISA PRA FAZER AQUI!
 @Entity(name = "cochanges_analysis")
-@DiscriminatorValue(""+AnalysisFactory.COCHANGES_ANALYSIS)
 public final class CoChangesAnalysis extends Analysis {
 
 	@Transient
@@ -38,6 +40,42 @@ public final class CoChangesAnalysis extends Analysis {
 	
 	public CoChangesAnalysis(){
 		this.setType(AnalysisFactory.COCHANGES_ANALYSIS);
+	}
+	
+	//Co-Change graph
+	public UndirectedGraph<FileDependencyObject, CoChangeHistory> getCoChangeGraph()
+			throws DatabaseException {
+		
+		int edgeCount = 0;
+		
+		DependencyDAO dependencyDAO = new DependencyDAO();
+		
+		UndirectedSparseGraph<FileDependencyObject, CoChangeHistory> coChangeGraph = 
+				new UndirectedSparseGraph<FileDependencyObject, CoChangeHistory>();
+		
+		List<DependencyGraph> dependencyGraphs = 
+				dependencyDAO.findAllDependenciesByAnalysis(
+						this.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
+		
+		for(DependencyGraph dependencyGraph : dependencyGraphs){
+			
+			TaskDependencyGraph taskDependency = (TaskDependencyGraph) dependencyGraph;
+			for(RawDependency<FileDependencyObject,FileDependencyObject,Commit> rawDep : taskDependency.getRawDependencies()){
+				
+				CoChangeHistory coChangeHistory = coChangeGraph.findEdge(rawDep.getClient(),rawDep.getSupplier());
+				if (coChangeHistory == null){
+					edgeCount++;
+					coChangeHistory = new CoChangeHistory(edgeCount);
+					coChangeHistory.addCommit(rawDep.getLabel());
+					coChangeGraph.addEdge(coChangeHistory, rawDep.getClient(), rawDep.getSupplier());
+				}
+				else{
+					coChangeHistory.addCommit(rawDep.getLabel());
+				}
+			}
+		}
+		
+		return coChangeGraph;
 	}
 	
 	@Override
@@ -228,11 +266,11 @@ public final class CoChangesAnalysis extends Analysis {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public final Matrix processHistoricalDependencyMatrix(final DependencyGraph dependency) throws DatabaseException {
-		if(!dependency.getDependencies().isEmpty()){
-			final List<Long> dependencySetsIds = new DependencySetDAO().getAllDependenciesSetUntilDependency(dependency);
+	public final Matrix processHistoricalDependencyMatrix(final DependencyGraph dependencyGraph) throws DatabaseException {
+		if(!dependencyGraph.getDependencies().isEmpty()){
+			final List<Long> dependencySetsIds = new DependencySetDAO().getAllDependenciesSetUntilDependency(dependencyGraph);
 			Matrix matrix = MatrixFactory.createMatrix();
-			Converter.convertDependenciesToLargeMatrix(matrix, dependencySetsIds, dependency.isDirectedDependency());
+			Converter.convertDependenciesToLargeMatrix(matrix, dependencySetsIds, dependencyGraph.isDirectedDependency());
 			return matrix;
 		}
 		else{

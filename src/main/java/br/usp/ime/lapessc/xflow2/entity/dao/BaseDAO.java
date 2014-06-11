@@ -195,6 +195,7 @@ public abstract class BaseDAO<Entity> {
 		} catch (NoResultException e){
 			return null;
 		} catch (javax.persistence.PersistenceException e){
+			e.printStackTrace();
 			if(e.getCause().getCause().getMessage().equalsIgnoreCase("Unknown database")){
 				throw new UnableToReachDatabaseException(e.getCause().getCause().getMessage());
 			}

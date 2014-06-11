@@ -8,7 +8,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.presentation.visualizations.VisualizationControl;
 import br.usp.ime.lapessc.xflow2.presentation.visualizations.graph.GraphRenderer;
@@ -45,11 +45,11 @@ public class DependencyChooserControl implements VisualizationControl<GraphVisua
 	public void actionPerformed(ActionEvent arg0) {
 		final int selectedRepresentation;
 		if(((String) dependencyChooserComboBox.getSelectedItem()).equals("Coordination Requirements")){
-			selectedRepresentation = DependencyGraph.COORD_REQUIREMENTS;
+			selectedRepresentation = DependencyGraphType.COORDINATION_REQUIREMENTS.getValue();
 		} else if (((String) dependencyChooserComboBox.getSelectedItem()).equals("Task Assignment")){
-			selectedRepresentation = DependencyGraph.TASK_ASSIGNMENT;
+			selectedRepresentation = DependencyGraphType.TASK_ASSIGNMENT.getValue();
 		} else {
-			selectedRepresentation = DependencyGraph.TASK_DEPENDENCY;
+			selectedRepresentation = DependencyGraphType.TASK_DEPENDENCY.getValue();
 		}
 		try {
 			((GraphRenderer) visualizationControlled.getRenderers()[0]).changeGraphType(selectedRepresentation);

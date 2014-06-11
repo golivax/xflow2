@@ -1,6 +1,7 @@
 package br.usp.ime.lapessc.xflow2.entity;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -15,7 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyJoinColumn;
 
 @Entity(name = "dependency_set")
-public class DependencySet<Client extends DependencyObject, Dependent extends DependencyObject> {
+public class DependencySet<Client extends DependencyObject, Supplier extends DependencyObject> {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,11 +25,11 @@ public class DependencySet<Client extends DependencyObject, Dependent extends De
 	
 	@ManyToOne(cascade = {CascadeType.MERGE,CascadeType.REMOVE}, targetEntity = DependencyObject.class)
 	@JoinColumn(name = "DEPENDED_OBJECT_ID")
-	private Client dependedObject;
+	private Supplier supplier;
 
 	@ManyToOne(cascade = CascadeType.ALL, targetEntity = DependencyGraph.class)
 	@JoinColumn(name = "DEPENDENCY_ID")
-	private DependencyGraph<Client, Dependent> associatedDependency;
+	private DependencyGraph<Client, Supplier> associatedDependency;
 	
 	//See http://download.oracle.com/javaee/6/api/javax/persistence/MapKeyJoinColumn.html
 	@ElementCollection(targetClass = Integer.class)
@@ -37,34 +38,37 @@ public class DependencySet<Client extends DependencyObject, Dependent extends De
 	@MapKeyJoinColumn(name="dependency_object", 
 			referencedColumnName = "DEPENDENCY_OBJECT_ID")
 	@Column(name = "DEPENDENCY_DEGREE")
-	private Map<DependencyObject, Integer> dependenciesMap;
+	private Map<DependencyObject, Integer> clientsMap;
 
-	public Client getDependedObject() {
-		return dependedObject;
+	public Supplier getSupplier() {
+		return supplier;
 	}
 
-	public void setDependedObject(Client dependedObject) {
-		this.dependedObject = dependedObject;
+	public void setSupplier(Supplier supplier) {
+		this.supplier = supplier;
 	}
 
-	public void setAssociatedDependency(DependencyGraph<Client, Dependent> associatedDependency) {
+	public void setAssociatedDependency(DependencyGraph<Client, Supplier> associatedDependency) {
 		this.associatedDependency = associatedDependency;
 	}
 
-	public DependencyGraph<Client, Dependent> getAssociatedDependency() {
+	public DependencyGraph<Client, Supplier> getAssociatedDependency() {
 		return associatedDependency;
 	}
 
-	public Map<? extends DependencyObject, Integer> getDependenciesMap() {
-		return dependenciesMap;
+	public Set<DependencyObject> getClients(){
+		return clientsMap.keySet();
+	}
+	
+	public Map<? extends DependencyObject, Integer> getClientsMap() {
+		return clientsMap;
 	}
 
-	public void setDependenciesMap(Map<Dependent, Integer> dependenciesMap) {
-		this.dependenciesMap = (Map<DependencyObject, Integer>) dependenciesMap;
+	public void setClientsMap(Map<Client, Integer> dependenciesMap) {
+		this.clientsMap = (Map<DependencyObject, Integer>) clientsMap;
 	}
 
 	public long getId() {
 		return id;
-	} 
-	
+	} 	
 }

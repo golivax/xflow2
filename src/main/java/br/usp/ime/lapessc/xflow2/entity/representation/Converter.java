@@ -30,23 +30,28 @@ public final class Converter {
 			DependencySetDAO dependencySetDAO = new DependencySetDAO();
 			
 			//100 load
-			int bulkLoad = 1;
+			int bulkLoad = 100;
 			
-			for(int i = 0; (i + bulkLoad -1) < dependencySetsIds.size(); i += bulkLoad){
-				long startID = dependencySetsIds.get(i);
-				long endID =  dependencySetsIds.get(i + bulkLoad - 1);
-				System.out.println("Processing dependecySets from " + startID + " to " + endID);
-				List<DependencySet> dependencySets = dependencySetDAO.findByIds(startID, endID);
+			for(int i = 0; (i + bulkLoad - 1) < dependencySetsIds.size(); i += bulkLoad){
+				int startIndex = i;
+				int endIndex = i + bulkLoad - 1;
+
+				System.out.println("Processing dependecySets from " + startIndex + " to " + endIndex);
+				
+				List<DependencySet> dependencySets = dependencySetDAO.findByIds(dependencySetsIds.subList(startIndex, endIndex + 1));
 				convertDependenciesToMatrix(resultMatrix, dependencySets, isDependencyDirected);
 				DatabaseManager.getDatabaseSession().clear();
 			}
 				
 			int rest = dependencySetsIds.size() % bulkLoad;
 			if (rest != 0){
-				long endID = dependencySetsIds.get(dependencySetsIds.size()-1);
-				long startID = endID - rest + 1;
-				System.out.println("Processing dependecySets from " + startID + " to " + endID);
-				List<DependencySet> dependencySets = dependencySetDAO.findByIds(startID, endID);
+				
+				int endIndex = dependencySetsIds.size() - 1;
+				int startIndex = endIndex - rest + 1;
+				
+				System.out.println("Processing dependecySets from " + startIndex + " to " + endIndex);
+				
+				List<DependencySet> dependencySets = dependencySetDAO.findByIds(dependencySetsIds.subList(startIndex, endIndex + 1));
 				convertDependenciesToMatrix(resultMatrix, dependencySets, isDependencyDirected);
 				DatabaseManager.getDatabaseSession().clear();
 			}
@@ -66,67 +71,69 @@ public final class Converter {
 		if(isDependencyDirected){
 			for (DependencySet dependencySet : dependencySets) {
 				
-				if(dependencySet.getDependedObject().getAssignedStamp() > (resultMatrix.getRows()-1)){
-					resultMatrix.incrementMatrixRowsTo(dependencySet.getDependedObject().getAssignedStamp()+1);
+				DependencyObject supplier = dependencySet.getSupplier();
+				int supplierStamp = supplier.getAssignedStamp();
+				
+				if(supplierStamp > (resultMatrix.getRows() - 1)){
+					resultMatrix.incrementMatrixRowsTo(supplierStamp + 1);
 				}
 
-				Set<DependencyObject> dependentObjects = dependencySet.getDependenciesMap().keySet();
+				Set<DependencyObject> clients = dependencySet.getClients();
 
-				for (DependencyObject dependentObject : dependentObjects) {
-					if(dependentObject.getAssignedStamp() > (resultMatrix.getColumns()-1)){
-						resultMatrix.incrementMatrixColumnsTo(dependentObject.getAssignedStamp()+1);
+				for (DependencyObject client : clients) {
+					
+					int clientStamp = client.getAssignedStamp();
+					
+					if(clientStamp > (resultMatrix.getColumns() - 1)){
+						resultMatrix.incrementMatrixColumnsTo(clientStamp + 1);
 					}
 					
-					resultMatrix.incrementValueAt((Integer) dependencySet.getDependenciesMap().get(dependentObject), dependencySet.getDependedObject().getAssignedStamp(), dependentObject.getAssignedStamp());
+					Integer coupling = (Integer) dependencySet.getClientsMap().get(client);
+					resultMatrix.incrementValueAt(coupling, clientStamp, supplierStamp);
 				}
 			}
 		}
 		else{
 			for (DependencySet dependencySet : dependencySets) {
 				
-				if(dependencySet.getDependedObject().getAssignedStamp() > (resultMatrix.getRows()-1)){
-					resultMatrix.incrementMatrixRowsTo(dependencySet.getDependedObject().getAssignedStamp()+1);
-				}
-				if(dependencySet.getDependedObject().getAssignedStamp() > (resultMatrix.getColumns()-1)){
-					resultMatrix.incrementMatrixColumnsTo(dependencySet.getDependedObject().getAssignedStamp()+1);
-				}
-				resultMatrix.incrementValueAt(1, dependencySet.getDependedObject().getAssignedStamp(), dependencySet.getDependedObject().getAssignedStamp());
-
-				Set<DependencyObject> dependentObjects = dependencySet.getDependenciesMap().keySet();
+				DependencyObject supplier = dependencySet.getSupplier();
+				int supplierStamp = supplier.getAssignedStamp();
 				
-				for (DependencyObject dependentObject : dependentObjects) {
-					if(dependentObject.getAssignedStamp() > (resultMatrix.getRows()-1)){
-						resultMatrix.incrementMatrixRowsTo(dependentObject.getAssignedStamp()+1);
+				if(supplierStamp > (resultMatrix.getRows() - 1)){
+					resultMatrix.incrementMatrixRowsTo(supplierStamp + 1);
+				}
+				if(supplierStamp > (resultMatrix.getColumns() - 1)){
+					resultMatrix.incrementMatrixColumnsTo(supplierStamp + 1);
+				}
+				
+				resultMatrix.incrementValueAt(1, supplierStamp, supplierStamp);
+
+				Set<DependencyObject> clients = dependencySet.getClients();
+				
+				for (DependencyObject client : clients) {
+					
+					int clientStamp = client.getAssignedStamp();
+					
+					if(clientStamp > (resultMatrix.getRows() - 1)){
+						resultMatrix.incrementMatrixRowsTo(clientStamp + 1);
 					}
-					if(dependentObject.getAssignedStamp() > (resultMatrix.getColumns()-1)){
-						resultMatrix.incrementMatrixColumnsTo(dependentObject.getAssignedStamp()+1);
+					if(clientStamp > (resultMatrix.getColumns() - 1)){
+						resultMatrix.incrementMatrixColumnsTo(clientStamp + 1);
 					}
 					
-					if(dependencySet.getDependedObject().getAssignedStamp() == dependentObject.getAssignedStamp()){
+					if(clientStamp == supplierStamp){
 						continue;
 					}
-					resultMatrix.incrementValueAt((Integer) dependencySet.getDependenciesMap().get(dependentObject), dependencySet.getDependedObject().getAssignedStamp(), dependentObject.getAssignedStamp());
-					resultMatrix.incrementValueAt((Integer) dependencySet.getDependenciesMap().get(dependentObject), dependentObject.getAssignedStamp(), dependencySet.getDependedObject().getAssignedStamp());
+					
+					Integer coupling = (Integer) dependencySet.getClientsMap().get(client);
+					
+					resultMatrix.incrementValueAt(coupling, clientStamp, supplierStamp);
+					resultMatrix.incrementValueAt(coupling, supplierStamp, clientStamp);
 				}
 			}
 		}	
 	}
 
-	/*
-	 * Dependency TO Matrix
-	 */
-	
-	
-	
-	/*
-	 * LIST<DependencyObject> TO JUNGGraph
-	 */
-	
-	
-	/*
-	 * LIST<Dependency> TO JUNGGraph
-	 */
-	
 	public static final JUNGGraph convertDependenciesToJUNGGraph(final List<? extends DependencyObject> dependencies, final boolean isDirected) throws DatabaseException {
 
 		final AbstractTypedGraph<JUNGVertex,JUNGEdge> graph;

@@ -179,7 +179,7 @@ public class SVNLogParser implements VCSLogParser {
 					entryPath.getPath(), commit.getRevision()));	
 			}
 					
-			//if the file has been modified, then we also grab its diff code
+			//if the file has been modified, then we grab its diff code
 			if (file.getOperationType() == 'M'){
 				file.setDiffCode(parserUtils.doDiff(
 						miningSettings.getVcs().getURI(), entryPath.getPath(), 

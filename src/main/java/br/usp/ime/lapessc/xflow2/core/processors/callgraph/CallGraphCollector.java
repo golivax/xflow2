@@ -16,7 +16,7 @@ import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
-import br.usp.ime.lapessc.xflow2.entity.TaskDependency;
+import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
@@ -86,7 +86,7 @@ public class CallGraphCollector implements DependenciesIdentifier {
 			*/
 			
 			if(structuralDependencies.size() > 0) { 
-				final TaskDependency taskDependency = new TaskDependency(true);
+				final TaskDependencyGraph taskDependency = new TaskDependencyGraph(true);
 				taskDependency.setAssociatedAnalysis(analysis);
 				taskDependency.setAssociatedEntry(entry);
 				

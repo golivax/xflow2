@@ -38,6 +38,7 @@ import java.util.List;
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
@@ -123,7 +124,7 @@ public class MetricsEvaluator {
 		for (Long revisionNumber : revisions) {
 			final Commit entry = new CommitDAO().findEntryFromRevision(analysis.getProject(), revisionNumber);
 			System.out.print("Evaluating revision "+entry.getRevision()+"\n");
-			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraph.TASK_DEPENDENCY);
+			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
 			if(entryDependency != null){
 				if(analysis.checkCutoffValues(entry)){
 					calculateEntryMetrics(entry);
@@ -161,7 +162,7 @@ public class MetricsEvaluator {
 		
 		for (Commit entry : entries) {
 			System.out.print("Evaluating revision "+entry.getRevision()+"\n");
-			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraph.TASK_DEPENDENCY);
+			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
 			if(entryDependency != null){
 				if(analysis.checkCutoffValues(entry)){
 					calculateEntryMetrics(entry);
@@ -188,7 +189,7 @@ public class MetricsEvaluator {
 		final JUNGGraph dependencyGraph = metricsSession.getAssociatedAnalysis().processDependencyGraph(entryDependency);
 		
 		for (DependencySet<FileDependencyObject, FileDependencyObject> dependencySet : entryDependency.getDependencies()) {
-			FileDependencyObject fileDependency = dependencySet.getDependedObject();
+			FileDependencyObject fileDependency = dependencySet.getSupplier();
 			
 			final FileMetricValues fileMetricTable = new FileMetricValues();
 			fileMetricTable.setAssociatedMetricsObject(metricsSession);

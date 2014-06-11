@@ -1,9 +1,11 @@
 package br.usp.ime.lapessc.xflow2.entity.dao.core;
 
+import java.util.Collection;
 import java.util.List;
 
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
@@ -85,13 +87,13 @@ public class DependencySetDAO extends BaseDAO<DependencySet> {
 		final Object[] parameter1 = new Object[]{"client", client};
 		final Object[] parameter2 = new Object[]{"supplier", supplier};
 		final Object[] parameter3 = new Object[]{"associatedAnalysisID", analysis.getId()};
-		final Object[] parameter4 = new Object[]{"dependencyType", DependencyGraph.TASK_DEPENDENCY};
+		final Object[] parameter4 = new Object[]{"dependencyType", DependencyGraphType.TASK_DEPENDENCY.getValue()};
 		
 		//TODO: DO IT IN HQL
 		DependencySetDAO dependencySetDAO = new DependencySetDAO();
 		DependencySet dependencySet = dependencySetDAO.findUnique(DependencySet.class, query, parameter1, parameter2, parameter3, parameter4);
 		if (dependencySet != null){
-			Integer degree = (Integer)dependencySet.getDependenciesMap().get(client);
+			Integer degree = (Integer)dependencySet.getClientsMap().get(client);
 			if (degree == 1){
 				isSupplier = true;
 			}
@@ -100,12 +102,10 @@ public class DependencySetDAO extends BaseDAO<DependencySet> {
 		return isSupplier;
 	}
 
-	public List<DependencySet> findByIds(long startID, long endID) throws DatabaseException{
-		final String query = "SELECT dependencySet FROM dependency_set dependencySet WHERE dependencySet.id between :startID and :endID";
-		final Object[] parameter1 = new Object[]{"startID", startID};
-		final Object[] parameter2 = new Object[]{"endID", endID};
-		
-		return (List<DependencySet>) findByQuery(DependencySet.class, query, parameter1, parameter2);		
+	public List<DependencySet> findByIds(Collection<Long> ids) throws DatabaseException{
+		final String query = "SELECT dependencySet FROM dependency_set dependencySet WHERE dependencySet.id in :ids";
+		final Object[] parameter1 = new Object[]{"ids", ids};		
+		return (List<DependencySet>) findByQuery(DependencySet.class, query, parameter1);		
 	}
 	
 }

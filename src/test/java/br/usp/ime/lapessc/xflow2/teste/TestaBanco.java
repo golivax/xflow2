@@ -17,12 +17,12 @@ public class TestaBanco {
 		for (DependencyGraph<FileDependencyObject, FileDependencyObject> dependency : dependencies) {
 			System.out.println("*** REVISION "+dependency.getAssociatedEntry().getRevision()+" ***");
 			for (DependencySet<FileDependencyObject, FileDependencyObject> dependencySet : dependency.getDependencies()) {
-				System.out.println("DEPENDED FILE: "+dependencySet.getDependedObject().getDependencyObjectName()+" ("+dependencySet.getDependedObject().getAssignedStamp()+")");
+				System.out.println("DEPENDED FILE: "+dependencySet.getSupplier().getDependencyObjectName()+" ("+dependencySet.getSupplier().getAssignedStamp()+")");
 				System.out.println("DEPENDENTS: ");
-				for (DependencyObject dependedFile : dependencySet.getDependenciesMap().keySet()) {
+				for (DependencyObject dependedFile : dependencySet.getClientsMap().keySet()) {
 					FileDependencyObject dependedFile2 = (FileDependencyObject) dependedFile;
 					System.out.print("("+dependedFile2.getAssignedStamp()+") "+dependedFile2.getDependencyObjectName());
-					System.out.println(" DEGREE: "+dependencySet.getDependenciesMap().get(dependedFile));
+					System.out.println(" DEGREE: "+dependencySet.getClientsMap().get(dependedFile));
 				}
 				System.out.println("-------------------");
 			}

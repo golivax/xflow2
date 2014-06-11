@@ -1,7 +1,6 @@
 package br.usp.ime.lapessc.xflow2.presentation.visualizations.graph;
 
 import java.awt.BorderLayout;
-import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.HashMap;
@@ -17,15 +16,8 @@ import prefuse.Visualization;
 import prefuse.action.ActionList;
 import prefuse.action.RepaintAction;
 import prefuse.action.assignment.ColorAction;
-import prefuse.action.assignment.DataSizeAction;
 import prefuse.action.assignment.FontAction;
-import prefuse.action.assignment.ShapeAction;
-import prefuse.action.layout.CircleLayout;
-import prefuse.action.layout.RandomLayout;
-import prefuse.action.layout.graph.ForceDirectedLayout;
 import prefuse.action.layout.graph.FruchtermanReingoldLayout;
-import prefuse.action.layout.graph.RadialTreeLayout;
-import prefuse.activity.Activity;
 import prefuse.controls.DragControl;
 import prefuse.controls.FocusControl;
 import prefuse.controls.NeighborHighlightControl;
@@ -40,14 +32,13 @@ import prefuse.render.LabelRenderer;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
-import prefuse.util.force.CircularWallForce;
-import prefuse.util.force.ForceSimulator;
 import prefuse.visual.VisualItem;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirements;
+import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirementsGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
@@ -70,7 +61,7 @@ public class GraphRenderer implements VisualizationRenderer<GraphVisualization> 
 	private Display display;
 	private PrefuseGraph graph;
 	
-	private int representedDependency = DependencyGraph.COORD_REQUIREMENTS;
+	private int representedDependency = DependencyGraphType.COORDINATION_REQUIREMENTS.getValue();
 	private long currentRevision;
 	
 	@Override
@@ -98,21 +89,21 @@ public class GraphRenderer implements VisualizationRenderer<GraphVisualization> 
 			System.out.println("Commit: " + commit.getRevision());
 			
 			final DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> dependencyDTO = 
-					new CoordinationRequirements();
+					new CoordinationRequirementsGraph();
 						
 			dependencyDTO.setAssociatedAnalysis(analysis);
 			dependencyDTO.setAssociatedEntry(commit);
 			
 			final Matrix taskAssignmentMatrix = 
 					analysis.getDependencyMatrixForEntry(
-							commit,DependencyGraph.TASK_ASSIGNMENT);
+							commit,DependencyGraphType.TASK_ASSIGNMENT.getValue());
 			
 			System.out.println(taskAssignmentMatrix.getRows() + ", " + 
 					taskAssignmentMatrix.getColumns());
 			
 			final Matrix taskDependencyMatrix = 
 					analysis.getDependencyMatrixForEntry(
-							commit,DependencyGraph.TASK_DEPENDENCY);
+							commit,DependencyGraphType.TASK_DEPENDENCY.getValue());
 			
 			System.out.println(taskDependencyMatrix.getRows() + ", " + 
 					taskDependencyMatrix.getColumns());
@@ -435,13 +426,13 @@ public class GraphRenderer implements VisualizationRenderer<GraphVisualization> 
 			entry = new CommitDAO().findEntryFromRevision(this.metricsSession.getAssociatedAnalysis().getProject(), newSequence);
 		}
 
-		if(representedDependency == DependencyGraph.COORD_REQUIREMENTS){
+		if(representedDependency == DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()){
 			if(this.metricsSession.getAssociatedAnalysis().isCoordinationRequirementPersisted()){
-				this.graph = Converter.convertJungToPrefuseGraph(metricsSession.getAssociatedAnalysis().processEntryDependencyGraph(entry, DependencyGraph.COORD_REQUIREMENTS));
+				this.graph = Converter.convertJungToPrefuseGraph(metricsSession.getAssociatedAnalysis().processEntryDependencyGraph(entry, DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()));
 			} else {
-				final DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> dependencyDTO = new DependencyDAO().findDependencyByEntry(metricsSession.getAssociatedAnalysis().getId(), entry.getId(), DependencyGraph.COORD_REQUIREMENTS);
-				final Matrix taskAssignmentMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraph.TASK_ASSIGNMENT);
-				final Matrix taskDependencyMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraph.TASK_DEPENDENCY);
+				final DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> dependencyDTO = new DependencyDAO().findDependencyByEntry(metricsSession.getAssociatedAnalysis().getId(), entry.getId(), DependencyGraphType.COORDINATION_REQUIREMENTS.getValue());
+				final Matrix taskAssignmentMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraphType.TASK_ASSIGNMENT.getValue());
+				final Matrix taskDependencyMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraphType.TASK_DEPENDENCY.getValue());
 				final Matrix matrix = taskAssignmentMatrix.multiply(taskDependencyMatrix).multiply(taskAssignmentMatrix.getTransposeMatrix());
 
 				this.graph = Converter.convertJungToPrefuseGraph(JUNGGraph.convertMatrixToJUNGGraph(matrix, dependencyDTO));

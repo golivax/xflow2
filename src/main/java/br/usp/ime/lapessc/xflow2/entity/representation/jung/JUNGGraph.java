@@ -38,6 +38,7 @@ import java.util.HashMap;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
@@ -75,10 +76,10 @@ public class JUNGGraph {
 		final AbstractTypedGraph<JUNGVertex,JUNGEdge> graph;
 		
 		if(dependency.isDirectedDependency()){
-			if(dependency.getType() == DependencyGraph.COORD_REQUIREMENTS){
+			if(dependency.getType() == DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()){
 				graph = transformCoordinationRequirementMatrixToDirectedGraph(matrix, dependency.getAssociatedAnalysis());
 			}
-			else if(dependency.getType() == DependencyGraph.TASK_ASSIGNMENT){
+			else if(dependency.getType() == DependencyGraphType.TASK_ASSIGNMENT.getValue()){
 				graph = transformTaskAssignmentMatrixToUndirectedGraph(matrix, dependency.getAssociatedAnalysis());
 			}
 			else {
@@ -86,10 +87,10 @@ public class JUNGGraph {
 			}
 		}
 		else{
-			if(dependency.getType() == DependencyGraph.COORD_REQUIREMENTS){
+			if(dependency.getType() == DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()){
 				graph = transformCoordinationRequirementMatrixToUndirectedGraph(matrix, dependency.getAssociatedAnalysis());
 			}
-			else if(dependency.getType() == DependencyGraph.TASK_ASSIGNMENT){
+			else if(dependency.getType() == DependencyGraphType.TASK_ASSIGNMENT.getValue()){
 				graph = transformTaskAssignmentMatrixToUndirectedGraph(matrix, dependency.getAssociatedAnalysis());
 			}
 			else {
@@ -107,9 +108,9 @@ public class JUNGGraph {
 		if(dependency.isDirectedDependency()){
 		}
 		else{
-			if(dependency.getType() == DependencyGraph.COORD_REQUIREMENTS){
+			if(dependency.getType() == DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()){
 			}
-			else if(dependency.getType() == DependencyGraph.TASK_ASSIGNMENT){
+			else if(dependency.getType() == DependencyGraphType.TASK_ASSIGNMENT.getValue()){
 			}
 			else {
 				transformTaskDependencyToUndirectedGraph(matrix, dependency.getAssociatedAnalysis(), graph);

@@ -36,8 +36,6 @@ package br.usp.ime.lapessc.xflow2.entity;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -55,7 +53,6 @@ import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 @Entity(name = "analysis")
 @Inheritance(strategy=InheritanceType.JOINED)
-@DiscriminatorColumn(name="ANALYSIS_TYPE", discriminatorType=DiscriminatorType.INTEGER)
 public abstract class Analysis {
 
 	@Id

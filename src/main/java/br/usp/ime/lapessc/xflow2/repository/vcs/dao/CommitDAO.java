@@ -45,6 +45,9 @@ import javax.persistence.Query;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
@@ -419,6 +422,25 @@ public class CommitDAO extends BaseDAO<Commit>{
 				analysis.getMaxFilesPerRevision()};
 		
 		return findUnique(Commit.class, query, parameter1, parameter2);
+	}
+	
+	public List<Commit> getCommitsFromDependencyObjectStamp(
+			Analysis analysis, int depObjStamp, int depType) throws DatabaseException{
+		
+		 String query = "SELECT assocEntry FROM dependency_set as dset " +
+				"JOIN dset.supplier AS depObj " +
+				"JOIN dset.associatedDependency AS assocDep " +
+		 		"JOIN assocDep.associatedEntry AS assocEntry " +
+		 		"JOIN assocDep.associatedAnalysis AS assocAnalysis " +
+		 		"WHERE depObj.assignedStamp = :depObjStamp " +
+		 		"AND assocDep.type = :depType " +
+		 		"AND assocAnalysis = :analysis";
+		 
+		final Object[] parameter1 = new Object[]{"depObjStamp", depObjStamp};
+		final Object[] parameter2 = new Object[]{"depType", depType};
+		final Object[] parameter3 = new Object[]{"analysis", analysis};
+
+		return (List<Commit>) findObjectsByQuery(query, parameter1, parameter2, parameter3);
 	}
 
 }

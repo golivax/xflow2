@@ -11,14 +11,14 @@ import br.usp.ime.lapessc.xflow2.core.processors.DependenciesIdentifier;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirements;
+import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirementsGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
-import br.usp.ime.lapessc.xflow2.entity.TaskAssignment;
-import br.usp.ime.lapessc.xflow2.entity.TaskDependency;
+import br.usp.ime.lapessc.xflow2.entity.TaskAssignmentGraph;
+import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
@@ -59,7 +59,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 		System.out.println("** Starting CoChanges analysis **");
 	
 		for (Long revision : revisions) {
-		
+			
 			final Commit commit = commitDAO.findEntryFromRevision(
 					analysis.getProject(), revision);			
 			
@@ -74,7 +74,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 			
 			if(fileToFileDependencies.size() > 0) { 
 				
-				final TaskDependency taskDependency = new TaskDependency(false);
+				final TaskDependencyGraph taskDependency = new TaskDependencyGraph(false);
 				taskDependency.setAssociatedAnalysis(analysis);
 				taskDependency.setAssociatedEntry(commit);
 	
@@ -86,15 +86,15 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 					
 				System.out.print("* Collecting tasks assignments...");
 				
-				final TaskAssignment taskAssignment = new TaskAssignment();
+				final TaskAssignmentGraph taskAssignment = new TaskAssignmentGraph();
 				taskAssignment.setAssociatedAnalysis(this.analysis);
 				taskAssignment.setAssociatedEntry(commit);
 				taskAssignment.setDirectedDependency(true);
 				
-				final Set<DependencySet<AuthorDependencyObject, FileDependencyObject>> authorToFileDependencies = 
-						gatherAuthorToFileDependencies(commit.getEntryFiles(), commit.getAuthor(), fileToFileDependencies);
+				final Set<DependencySet<FileDependencyObject,AuthorDependencyObject>> authorToFileDependencies = 
+						gatherAuthorToFileDependencies(commit.getAuthor(), fileToFileDependencies);
 				
-				for (DependencySet<AuthorDependencyObject, FileDependencyObject> dependencySet : authorToFileDependencies) {
+				for (DependencySet<FileDependencyObject,AuthorDependencyObject> dependencySet : authorToFileDependencies) {
 					dependencySet.setAssociatedDependency(taskAssignment);
 				}
 				
@@ -107,8 +107,8 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 			
 					System.out.print("* Calculating coordination requirements...");
 					
-					final CoordinationRequirements coordinationRequirement = 
-							new CoordinationRequirements();
+					final CoordinationRequirementsGraph coordinationRequirement = 
+							new CoordinationRequirementsGraph();
 					
 					coordinationRequirement.setAssociatedAnalysis(
 							this.analysis);
@@ -223,17 +223,21 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 			
 			DependencySet<FileDependencyObject, FileDependencyObject> dependencySet = 
 				new DependencySet<FileDependencyObject, FileDependencyObject>();
-			dependencySet.setDependedObject(fileDependencyObjectList.get(i));
-			dependencySet.setDependenciesMap(dependenciesMap);
+			dependencySet.setSupplier(fileDependencyObjectList.get(i));
+			dependencySet.setClientsMap(dependenciesMap);
 			setOfDependencySets.add(dependencySet);
 		}
 		
 		return setOfDependencySets;
 	}
 	
-	private Set<DependencySet<AuthorDependencyObject, FileDependencyObject>> gatherAuthorToFileDependencies(List<FileArtifact> changedFiles, Author author, Set<DependencySet<FileDependencyObject, FileDependencyObject>> fileDependencies) throws DatabaseException {
+	private Set<DependencySet<FileDependencyObject,AuthorDependencyObject>> gatherAuthorToFileDependencies(
+			Author author, Set<DependencySet<FileDependencyObject, FileDependencyObject>> fileDependencies) throws DatabaseException {
+		
 		final AuthorDependencyObjectDAO authorDependencyDAO = new AuthorDependencyObjectDAO();
-		final Set<DependencySet<AuthorDependencyObject, FileDependencyObject>> dependenciesSet = new HashSet<DependencySet<AuthorDependencyObject, FileDependencyObject>>();
+		
+		final Set<DependencySet<FileDependencyObject,AuthorDependencyObject>> dependenciesSet = 
+				new HashSet<DependencySet<FileDependencyObject,AuthorDependencyObject>>();
 		
 		final AuthorDependencyObject dependedAuthor;
 		if(dependencyObjectsCache.containsKey(author.getName())){
@@ -254,19 +258,21 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 		//Builds the set of dependency objects
 		final Map<FileDependencyObject, Integer> dependenciesMap = new HashMap<FileDependencyObject, Integer>();
 		for (DependencySet<FileDependencyObject, FileDependencyObject> fileDependency : fileDependencies) {
-			dependenciesMap.put(fileDependency.getDependedObject(), 1);
+			dependenciesMap.put(fileDependency.getSupplier(), 1);
 		}
 
-		DependencySet<AuthorDependencyObject, FileDependencyObject> dependencySet = new DependencySet<AuthorDependencyObject, FileDependencyObject>();
-		dependencySet.setDependedObject(dependedAuthor);
-		dependencySet.setDependenciesMap(dependenciesMap);
+		DependencySet<FileDependencyObject,AuthorDependencyObject> dependencySet = 
+				new DependencySet<FileDependencyObject,AuthorDependencyObject>();
+		
+		dependencySet.setSupplier(dependedAuthor);
+		dependencySet.setClientsMap(dependenciesMap);
 		
 		dependenciesSet.add(dependencySet);
 	    return dependenciesSet;
 	}
 	
 	
-	private Set<DependencySet<AuthorDependencyObject, AuthorDependencyObject>> gatherCoordinationRequirements(final TaskDependency taskDependency, final TaskAssignment taskAssignment) throws DatabaseException {
+	private Set<DependencySet<AuthorDependencyObject, AuthorDependencyObject>> gatherCoordinationRequirements(final TaskDependencyGraph taskDependency, final TaskAssignmentGraph taskAssignment) throws DatabaseException {
 
 		final Set<DependencySet<AuthorDependencyObject, AuthorDependencyObject>> coordinationDependencies = new HashSet<DependencySet<AuthorDependencyObject, AuthorDependencyObject>>();
 		
@@ -301,8 +307,8 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 				
 				dependenciesMap.put(dependentAuthor, coordReq.getValueAt(j, i));
 			}
-			authorDependencies.setDependenciesMap(dependenciesMap);
-			authorDependencies.setDependedObject(dependedAuthor);
+			authorDependencies.setClientsMap(dependenciesMap);
+			authorDependencies.setSupplier(dependedAuthor);
 			coordinationDependencies.add(authorDependencies);
 		}
 		return coordinationDependencies;

@@ -6,7 +6,6 @@ import br.usp.ime.lapessc.xflow2.core.processors.callgraph.CallGraphAnalysis;
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.SoftwareProject;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
 import br.usp.ime.lapessc.xflow2.exception.core.analysis.AnalysisRangeException;

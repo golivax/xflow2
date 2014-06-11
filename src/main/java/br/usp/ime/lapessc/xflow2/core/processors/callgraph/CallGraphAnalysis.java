@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import br.usp.ime.lapessc.xflow2.core.AnalysisFactory;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
+import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencySetDAO;
 import br.usp.ime.lapessc.xflow2.entity.representation.Converter;
@@ -22,7 +21,6 @@ import br.usp.ime.lapessc.xflow2.entity.representation.matrix.MatrixFactory;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 @Entity(name = "callgraph_analysis")
-@DiscriminatorValue(""+AnalysisFactory.CALLGRAPH_ANALYSIS)
 public class CallGraphAnalysis extends Analysis{
 
 	@Transient
@@ -100,7 +98,7 @@ public class CallGraphAnalysis extends Analysis{
 			}
 		}
 		
-			if(matrixCache == null){
+		if(matrixCache == null){
 			matrix = processHistoricalDependencyMatrix(dependency);
 			matrixCache = matrix;
 			dependencyCache = dependency;
@@ -138,7 +136,9 @@ public class CallGraphAnalysis extends Analysis{
 	public final Matrix processHistoricalDependencyMatrix(final DependencyGraph dependency) throws DatabaseException {
 		
 		if(!dependency.getDependencies().isEmpty()){
-			final List<Long> dependencySetsIds = new DependencySetDAO().getAllDependenciesSetUntilDependency(dependency);
+			final List<Long> dependencySetsIds = 
+					new DependencySetDAO().getAllDependenciesSetUntilDependency(
+							dependency);
 			Matrix matrix = MatrixFactory.createMatrix();
 			Converter.convertDependenciesToLargeMatrix(matrix, dependencySetsIds, true);
 			return matrix;
@@ -155,14 +155,5 @@ public class CallGraphAnalysis extends Analysis{
 	public boolean isWholeSystemSnapshot() {
 		return wholeSystemSnapshot;
 	}
-
-//	public void setWholeSystemSnapshot(boolean wholeSystemSnapshot) {
-//		this.wholeSystemSnapshot = wholeSystemSnapshot;
-//	}
-//
-//	public boolean isWholeSystemSnapshot() {
-//		return wholeSystemSnapshot;
-//	}
-
 
 }

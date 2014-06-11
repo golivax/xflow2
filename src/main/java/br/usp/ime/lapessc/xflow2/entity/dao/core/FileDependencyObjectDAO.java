@@ -6,6 +6,7 @@ import java.util.List;
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -152,17 +153,12 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 	}
 
 	public FileDependencyObject findDependencyObjectByFilePath (Analysis analysis, String path) throws DatabaseException {
-		final String query = "SELECT dep from file_dependency dep where " +
+		final String query = "SELECT max(dep) from file_dependency dep where " +
 				"dep.analysis = :analysis and dep.filePath = :path";
 		final Object[] parameter1 = new Object[]{"analysis", analysis};
 		final Object[] parameter2 = new Object[]{"path", path};
 		
-		Collection<FileDependencyObject> listFileDependencyObject = 
-			findByQuery(FileDependencyObject.class, query, parameter1, 
-					parameter2);
-		
-		return listFileDependencyObject.isEmpty() ? 
-				null : listFileDependencyObject.iterator().next();
+		return findUnique(FileDependencyObject.class, query, parameter1, parameter2);
 	}
 
 	public List<FileDependencyObject> findSuppliers(FileDependencyObject client, 
@@ -179,7 +175,7 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 		final Object[] parameter1 = new Object[]{"client", client};
 		final Object[] parameter2 = new Object[]{"excludedSuppliers", excludedSuppliers};
 		final Object[] parameter3 = new Object[]{"associatedAnalysisID", client.getAnalysis().getId()};
-		final Object[] parameter4 = new Object[]{"dependencyType", DependencyGraph.TASK_DEPENDENCY};
+		final Object[] parameter4 = new Object[]{"dependencyType", DependencyGraphType.TASK_DEPENDENCY.getValue()};
 		
 		return (List<FileDependencyObject>) findByQuery(
 				FileDependencyObject.class, query, parameter1, parameter2, 

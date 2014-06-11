@@ -36,23 +36,17 @@ import java.util.Date;
 
 import javax.persistence.EntityManager;
 
-import br.usp.ime.lapessc.xflow2.core.AnalysisFactory;
 import br.usp.ime.lapessc.xflow2.core.DataProcessor;
-import br.usp.ime.lapessc.xflow2.core.VCSMiner;
-import br.usp.ime.lapessc.xflow2.core.transactions.SlidingTimeWindowProcessor;
-import br.usp.ime.lapessc.xflow2.entity.AccessCredentials;
+import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
-import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.VCSRepository;
 import br.usp.ime.lapessc.xflow2.entity.XFlowProject;
-import br.usp.ime.lapessc.xflow2.entity.dao.cm.VCSMiningProjectDAO;
+import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
-import br.usp.ime.lapessc.xflow2.exception.cm.CMException;
-import br.usp.ime.lapessc.xflow2.exception.core.analysis.AnalysisRangeException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.metrics.MetricsEvaluator;
+import br.usp.ime.lapessc.xflow2.metrics.cochange.ChangeDependenciesCalculator;
 import br.usp.ime.lapessc.xflow2.metrics.entry.EntryMetricModel;
 import br.usp.ime.lapessc.xflow2.metrics.file.FileMetricModel;
 import br.usp.ime.lapessc.xflow2.metrics.project.ProjectMetricModel;
@@ -163,7 +157,7 @@ public class XFlow {
 		}
 		*/
 	
-		
+		/**
 		try {
 
 			XFlowProject xFlowProject = createXFlowProject();
@@ -204,17 +198,17 @@ public class XFlow {
 		} catch (Exception e){
 			e.printStackTrace();
 		}
+		*/
 		
-	
-		/**		
+		/**
 		try{
 			VCSMiningProject miningProject = new VCSMiningProjectDAO().findById(
 					VCSMiningProject.class, 1L);
 			
 			//CoChange
 			Analysis analysis = AnalysisFactory.createCoChangesAnalysis(
-					miningProject, "CoChanges for the Ant project", false, 
-					275817, 486465, 0, 0, 5, false);
+					miningProject, "CoChanges for the Moenia project", false, 
+					1204860, 1231764, 0, 0, 0, false);
 			
 			DataProcessor.processEntries(analysis, new Filter(".*?"));
 			
@@ -222,6 +216,19 @@ public class XFlow {
 			e.printStackTrace();
 		}
 		*/
+		
+		
+		try{
+			CoChangesAnalysis coChangesAnalysis = 
+					(CoChangesAnalysis) new AnalysisDAO().findById(
+					Analysis.class, 1L);
+				
+			ChangeDependenciesCalculator coChangeCalculator = new ChangeDependenciesCalculator();
+				coChangeCalculator.calculate(coChangesAnalysis);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
 		
 		/**
 		try {

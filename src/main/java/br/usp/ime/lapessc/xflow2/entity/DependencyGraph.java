@@ -1,11 +1,10 @@
 package br.usp.ime.lapessc.xflow2.entity;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,20 +18,15 @@ import javax.persistence.OneToOne;
 
 @Entity(name="dependency")
 @Inheritance(strategy=InheritanceType.JOINED)
-@DiscriminatorColumn(name="OBJECT_TYPE", discriminatorType=DiscriminatorType.INTEGER)
-public abstract class DependencyGraph<Client extends DependencyObject, Suppliers extends DependencyObject> {
+public abstract class DependencyGraph<Client extends DependencyObject, Supplier extends DependencyObject> {
 
-	public final static int TASK_DEPENDENCY = 0;
-	public final static int TASK_ASSIGNMENT = 1;
-	public final static int COORD_REQUIREMENTS = 2;
-	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "DEPENDENCY_ID")
 	private long id;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "associatedDependency", targetEntity = DependencySet.class)
-	private Set<DependencySet<Client, Suppliers>> dependencies;
+	private Set<DependencySet<Client, Supplier>> dependencies;
 	
 	@OneToOne
 	@JoinColumn(name = "ENTRY_ID", nullable = false)
@@ -60,14 +54,14 @@ public abstract class DependencyGraph<Client extends DependencyObject, Suppliers
 		return id;
 	}
 
-	public void setDependencies(Set<DependencySet<Client, Suppliers>> dependencies) {
+	public void setDependencies(Set<DependencySet<Client, Supplier>> dependencies) {
 		this.dependencies = dependencies;
-		for (DependencySet<Client, Suppliers> dependencySet : dependencies) {
+		for (DependencySet<Client, Supplier> dependencySet : dependencies) {
 			dependencySet.setAssociatedDependency(this);
 		}
 	}
 
-	public Set<DependencySet<Client, Suppliers>> getDependencies() {
+	public Set<DependencySet<Client, Supplier>> getDependencies() {
 		return dependencies;
 	}
 
@@ -102,4 +96,29 @@ public abstract class DependencyGraph<Client extends DependencyObject, Suppliers
 	public void setDirectedDependency(final boolean directedDependency) {
 		this.directedDependency = directedDependency;
 	}
+	
+	public Set<RawDependency<Client,Supplier,Commit>> getRawDependencies(){
+		
+		Set<RawDependency<Client,Supplier,Commit>> rawDeps = 
+				new HashSet<RawDependency<Client,Supplier,Commit>>();
+		
+		for(DependencySet<Client,Supplier> dependencySet : getDependencies()){
+
+			Supplier supplier = dependencySet.getSupplier();
+			
+			for(DependencyObject depObject : dependencySet.getClients()){
+				
+				Client client = (Client) depObject;
+				
+				RawDependency<Client,Supplier,Commit> rawDep = 
+						new RawDependency<Client,Supplier,Commit>(
+								client, supplier, this.getAssociatedEntry());
+				
+				rawDeps.add(rawDep);
+			}			
+		}
+		
+		return rawDeps;
+	}
+	
 }

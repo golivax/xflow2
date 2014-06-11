@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import br.usp.ime.lapessc.xflow2.core.processors.callgraph.CallGraphAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
@@ -49,7 +50,7 @@ public class StructuralCouplingCalculator {
 			dependencyDAO.findHighestDependencyByEntry(
 				analysis.getId(), 
 				analysis.getLastEntry().getId(), 
-				DependencyGraph.TASK_DEPENDENCY);
+				DependencyGraphType.TASK_DEPENDENCY.getValue());
 		
 		return lastDependency; 
 	}
