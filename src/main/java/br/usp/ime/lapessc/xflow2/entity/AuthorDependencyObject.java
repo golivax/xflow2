@@ -1,12 +1,10 @@
 package br.usp.ime.lapessc.xflow2.entity;
 
-import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 @Entity(name="author_dependency")
-@DiscriminatorValue(""+DependencyObject.AUTHOR_DEPENDENCY)
 public class AuthorDependencyObject extends DependencyObject {
 
 	@OneToOne
@@ -23,7 +21,7 @@ public class AuthorDependencyObject extends DependencyObject {
 
 	
 	public AuthorDependencyObject() {
-		super(DependencyObject.AUTHOR_DEPENDENCY);
+		super(DependencyObjectType.AUTHOR_DEPENDENCY.getValue());
 	}
 
 	@Override

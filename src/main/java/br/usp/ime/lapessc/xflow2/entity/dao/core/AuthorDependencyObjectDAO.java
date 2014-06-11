@@ -7,6 +7,7 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.DependencyObjectType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
@@ -60,7 +61,7 @@ public class AuthorDependencyObjectDAO extends DependencyObjectDAO<AuthorDepende
 
 		final List<AuthorDependencyObject> authordep = (List<AuthorDependencyObject>) findByQuery(AuthorDependencyObject.class, query, parameter1, parameter2);
 		if(authordep.isEmpty()){
-			final String subquery = "SELECT MAX(authordep.assignedStamp) from dependency_object authordep where authordep.analysis = :analysis and authordep.objectType = "+DependencyObject.AUTHOR_DEPENDENCY;
+			final String subquery = "SELECT MAX(authordep.assignedStamp) from dependency_object authordep where authordep.analysis = :analysis and authordep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
 			return getIntegerValueByQuery(subquery, parameter2) + 1;
 		}
 		else{
@@ -70,7 +71,7 @@ public class AuthorDependencyObjectDAO extends DependencyObjectDAO<AuthorDepende
 	
 	@Override
 	public int checkHighestStamp(Analysis analysis) throws DatabaseException {
-		final String query = "SELECT MAX(authordep.assignedStamp) from dependency_object authordep where authordep.analysis = :analysis and authordep.objectType = "+DependencyObject.AUTHOR_DEPENDENCY;
+		final String query = "SELECT MAX(authordep.assignedStamp) from dependency_object authordep where authordep.analysis = :analysis and authordep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
 		final Object[] parameter1 = new Object[]{"analysis", analysis};
 		
 		return getIntegerValueByQuery(query, parameter1);

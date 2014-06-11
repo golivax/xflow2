@@ -8,6 +8,7 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.DependencyObjectType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
@@ -56,7 +57,7 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 	@Override
 	public int checkDependencyStamp(final FileDependencyObject dependedObj) throws DatabaseException {
 		if(dependedObj.getFile().getOperationType() == 'A'){
-			final String query = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObject.FILE_DEPENDENCY;
+			final String query = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObjectType.FILE_DEPENDENCY.getValue();
 			final Object[] parameter1 = new Object[]{"analysis", dependedObj.getAnalysis()};
 
 			return getIntegerValueByQuery(query, parameter1) + 1;
@@ -72,7 +73,7 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 				return filedep.getAssignedStamp();
 			}
 			else{
-				final String subquery = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObject.FILE_DEPENDENCY;
+				final String subquery = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
 				return getIntegerValueByQuery(subquery, parameter1) + 1;
 			}
 		}
@@ -80,7 +81,7 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 	
 	@Override
 	public int checkHighestStamp(Analysis analysis) throws DatabaseException {
-		final String query = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObject.FILE_DEPENDENCY;
+		final String query = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
 		final Object[] parameter1 = new Object[]{"analysis", analysis};
 		
 		return getIntegerValueByQuery(query, parameter1);

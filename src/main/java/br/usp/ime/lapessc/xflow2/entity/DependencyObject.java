@@ -1,8 +1,6 @@
 package br.usp.ime.lapessc.xflow2.entity;
 
 import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,11 +12,7 @@ import javax.persistence.ManyToOne;
 
 @Entity(name="dependency_object")
 @Inheritance(strategy=InheritanceType.JOINED)
-@DiscriminatorColumn(name="OBJECT_TYPE", discriminatorType=DiscriminatorType.INTEGER)
 public abstract class DependencyObject {
-
-	public static final int FILE_DEPENDENCY = 1;
-	public static final int AUTHOR_DEPENDENCY = 2;
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
