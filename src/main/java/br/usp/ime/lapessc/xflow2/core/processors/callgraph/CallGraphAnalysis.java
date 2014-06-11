@@ -7,8 +7,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
-import br.usp.ime.lapessc.xflow2.core.AnalysisFactory;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
+import br.usp.ime.lapessc.xflow2.entity.AnalysisType;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
@@ -36,7 +36,7 @@ public class CallGraphAnalysis extends Analysis{
 	private JUNGGraph graphCache = null;
 	
 	public CallGraphAnalysis(){
-		this.setType(AnalysisFactory.CALLGRAPH_ANALYSIS);
+		this.setType(AnalysisType.CALLGRAPH_ANALYSIS.getValue());
 		this.setWholeSystemSnapshot(false);
 	}
 	

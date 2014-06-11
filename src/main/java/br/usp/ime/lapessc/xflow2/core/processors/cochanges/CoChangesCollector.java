@@ -181,7 +181,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 					
 					//Search database for matching FileDependencyObject 
 					fileDependencyObject = 
-						dependencyObjDAO.findDependencyObjectByFilePath(
+						dependencyObjDAO.findLastDependencyObjectByFilePath(
 								analysis, changedFile.getPath());
 					
 					if (fileDependencyObject == null){

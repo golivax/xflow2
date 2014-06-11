@@ -39,12 +39,12 @@ import br.usp.ime.lapessc.xflow2.core.processors.DependenciesIdentifier;
 import br.usp.ime.lapessc.xflow2.core.processors.callgraph.CallGraphCollector;
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesCollector;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
+import br.usp.ime.lapessc.xflow2.entity.AnalysisType;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.repository.vcs.dao.CommitDAO;
 import br.usp.ime.lapessc.xflow2.util.Filter;
-
 
 public final class DataProcessor {
 
@@ -52,20 +52,17 @@ public final class DataProcessor {
 			final Filter filter) throws DatabaseException{
 		
 		CommitDAO entryDAO = new CommitDAO();
-		final DependenciesIdentifier[] contexts;
-
-		switch (analysis.getType()) {
 		
-			case AnalysisFactory.COCHANGES_ANALYSIS:
-				contexts = new DependenciesIdentifier[]{new CoChangesCollector()};
-				break;
-			case AnalysisFactory.CALLGRAPH_ANALYSIS:
-				contexts = new DependenciesIdentifier[]{new CallGraphCollector()};
-				break;			
-			default:
-				contexts = null;
+		//TODO: Replace conditional with Polymorphism
+		DependenciesIdentifier context = null;
+		
+		if (analysis.getType() == AnalysisType.COCHANGES_ANALYSIS.getValue()){
+			context = new CoChangesCollector();
 		}
-
+		else if(analysis.getType() == AnalysisType.CALLGRAPH_ANALYSIS.getValue()){
+			context = new CallGraphCollector();
+		}
+		
 		final List<Long> revisions;
 
 
@@ -85,27 +82,16 @@ public final class DataProcessor {
 					analysis.getMaxFilesPerRevision());
 		}
 		 
-		for (int i = 0; i < contexts.length; i++) {
-			contexts[i].dataCollect(revisions, analysis, filter);
-		}
+		context.dataCollect(revisions, analysis, filter);
 	}
 	
 	public static final void resumeProcess(final Analysis analysis, final long finalRevision, final Filter filter, final String details) throws DatabaseException{
 		
 		CommitDAO entryDAO = new CommitDAO();
-		final DependenciesIdentifier[] contexts;
-
-		switch (analysis.getType()) {
-		
-		case AnalysisFactory.COCHANGES_ANALYSIS:
-			contexts = new DependenciesIdentifier[]{new CoChangesCollector()};
-			break;
-			
-		default:
-			contexts = null;
-		}
+		DependenciesIdentifier context = new CoChangesCollector();
 
 		final List<Long> revisions;
+		
 		if(analysis.isTemporalConsistencyForced()){
 			long previousLastEntrySequence = entryDAO.findEntrySequence(analysis.getProject(), analysis.getLastEntry());
 			Commit initialEntry = entryDAO.findEntryFromSequence(analysis.getProject(), (previousLastEntrySequence+1));
@@ -119,9 +105,7 @@ public final class DataProcessor {
 			analysis.setLastEntry(finalEntry);
 		}
 		 
-		for (int i = 0; i < contexts.length; i++) {
-			contexts[i].dataCollect(revisions, analysis, filter);
-		}
+		context.dataCollect(revisions, analysis, filter);
 		
 		analysis.setDetails(details);		
 		new AnalysisDAO().update(analysis);
@@ -130,25 +114,13 @@ public final class DataProcessor {
 	public static final void resumeProcess(final Analysis analysis, final Commit finalEntry, final Filter filter, final String details) throws DatabaseException{
 		
 		CommitDAO entryDAO = new CommitDAO();
-		DependenciesIdentifier[] contexts = null;
-		
-		switch (analysis.getType()) {
-		
-		case AnalysisFactory.COCHANGES_ANALYSIS:
-			contexts = new DependenciesIdentifier[]{new CoChangesCollector()};
-			break;
-			
-		default:
-			contexts = null;
-		}
+		DependenciesIdentifier context = new CoChangesCollector();
 		
 		long previousLastEntrySequence = entryDAO.findEntrySequence(analysis.getProject(), analysis.getLastEntry());
 		Commit initialEntry = entryDAO.findEntryFromSequence(analysis.getProject(), (previousLastEntrySequence+1));
 		List<Long> revisions = entryDAO.getAllRevisionsWithinEntries(initialEntry, finalEntry, analysis.getMaxFilesPerRevision());
 		
-		for (int i = 0; i < contexts.length; i++) {
-			contexts[i].dataCollect(revisions, analysis, filter);
-		}
+		context.dataCollect(revisions, analysis, filter);
 		
 		Long lastRevision = revisions.get(revisions.size()-1);
 		Commit lastEntry = entryDAO.findEntryFromRevision(analysis.getProject(), lastRevision);

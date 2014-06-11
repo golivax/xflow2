@@ -149,7 +149,7 @@ public class CallGraphCollector implements DependenciesIdentifier {
 					
 					//Search database for matching FileDependencyObject 
 					dependencyObject = 
-						dependencyObjDAO.findDependencyObjectByFilePath(analysis, changedFile.getPath());
+						dependencyObjDAO.findLastDependencyObjectByFilePath(analysis, changedFile.getPath());
 					
 					if (dependencyObject == null){
 						FileArtifact addedFileReference = 

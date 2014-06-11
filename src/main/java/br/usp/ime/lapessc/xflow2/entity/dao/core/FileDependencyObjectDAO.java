@@ -152,7 +152,7 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 		return dependencyObjects;
 	}
 
-	public FileDependencyObject findDependencyObjectByFilePath (Analysis analysis, String path) throws DatabaseException {
+	public FileDependencyObject findLastDependencyObjectByFilePath (Analysis analysis, String path) throws DatabaseException {
 		final String query = "SELECT max(dep) from file_dependency dep where " +
 				"dep.analysis = :analysis and dep.filePath = :path";
 		final Object[] parameter1 = new Object[]{"analysis", analysis};

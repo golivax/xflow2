@@ -13,10 +13,6 @@ import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.repository.vcs.dao.CommitDAO;
 
 public abstract class AnalysisFactory {
-
-	//FIXME: Criar enums e matar isto
-	public static final int COCHANGES_ANALYSIS = 1;
-	public static final int CALLGRAPH_ANALYSIS = 2;
 	
 	public static Analysis createCoChangesAnalysis(VCSMiningProject project, 
 			String details, boolean temporalConsistencyForced, 

@@ -6,8 +6,8 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
-import br.usp.ime.lapessc.xflow2.core.AnalysisFactory;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
+import br.usp.ime.lapessc.xflow2.entity.AnalysisType;
 import br.usp.ime.lapessc.xflow2.entity.CoChangeHistory;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
@@ -39,7 +39,7 @@ public final class CoChangesAnalysis extends Analysis {
 	private JUNGGraph graphCache = null;
 	
 	public CoChangesAnalysis(){
-		this.setType(AnalysisFactory.COCHANGES_ANALYSIS);
+		this.setType(AnalysisType.COCHANGES_ANALYSIS.getValue());
 	}
 	
 	//Co-Change graph
