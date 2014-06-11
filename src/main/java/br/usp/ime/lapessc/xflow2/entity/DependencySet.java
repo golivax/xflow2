@@ -64,7 +64,7 @@ public class DependencySet<Client extends DependencyObject, Supplier extends Dep
 		return clientsMap;
 	}
 
-	public void setClientsMap(Map<Client, Integer> dependenciesMap) {
+	public void setClientsMap(Map<Client, Integer> clientsMap) {
 		this.clientsMap = (Map<DependencyObject, Integer>) clientsMap;
 	}
 
