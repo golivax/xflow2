@@ -1,21 +1,22 @@
 package br.usp.ime.lapessc.xflow2.core.processors.cochanges;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.AnalysisType;
-import br.usp.ime.lapessc.xflow2.entity.CoChangeHistory;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.RawDependency;
-import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraph;
+import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraphEdge;
+import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraphVertex;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencySetDAO;
 import br.usp.ime.lapessc.xflow2.entity.representation.Converter;
@@ -23,8 +24,8 @@ import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.MatrixFactory;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
-import edu.uci.ics.jung.graph.UndirectedGraph;
-import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+import br.usp.ime.lapessc.xflow2.metrics.cochange.ChangeDependency;
+import edu.uci.ics.jung.graph.util.Pair;
 
 @Entity(name = "cochanges_analysis")
 public final class CoChangesAnalysis extends Analysis {
@@ -42,39 +43,55 @@ public final class CoChangesAnalysis extends Analysis {
 		this.setType(AnalysisType.COCHANGES_ANALYSIS.getValue());
 	}
 	
-	//Co-Change graph
-	public UndirectedGraph<FileDependencyObject, CoChangeHistory> getCoChangeGraph()
-			throws DatabaseException {
+	public Set<ChangeDependency> getChangeDependencies() throws DatabaseException{
 		
-		int edgeCount = 0;
+		CoChangeGraph coChangeGraph = getCoChangeGraph();
+		
+		System.out.println("Vertices: " + coChangeGraph.getVertexCount());
+		System.out.println("Edges: " + coChangeGraph.getEdgeCount());
+		
+		Set<ChangeDependency> changeDeps = new HashSet<ChangeDependency>();
+		for(CoChangeGraphEdge coChangeGraphEdge : coChangeGraph.getEdges()){
+			
+			Pair<CoChangeGraphVertex> pair = coChangeGraphEdge.getEndpoints();
+			
+			if(!pair.getFirst().equals(pair.getSecond())){
+				
+				//Change Dep: first --> second
+				ChangeDependency firstToSecondDep = new ChangeDependency(
+						pair.getFirst().getFileDependencyObject().getFilePath(), 
+						pair.getFirst().getFileDependencyObject().getAssignedStamp(),
+						pair.getSecond().getFileDependencyObject().getFilePath(),
+						pair.getSecond().getFileDependencyObject().getAssignedStamp(),
+						coChangeGraph.findEdge(pair.getFirst(), pair.getFirst()).getCoChangeHistory().getCommits(), 
+						coChangeGraph.findEdge(pair.getSecond(), pair.getSecond()).getCoChangeHistory().getCommits());
+				
+				//Change Dep: second --> first				
+				ChangeDependency secondToFirstDep = new ChangeDependency(
+						pair.getSecond().getFileDependencyObject().getFilePath(),
+						pair.getSecond().getFileDependencyObject().getAssignedStamp(),
+						pair.getFirst().getFileDependencyObject().getFilePath(), 
+						pair.getFirst().getFileDependencyObject().getAssignedStamp(),
+						coChangeGraph.findEdge(pair.getSecond(), pair.getSecond()).getCoChangeHistory().getCommits(),
+						coChangeGraph.findEdge(pair.getFirst(), pair.getFirst()).getCoChangeHistory().getCommits());
+						
+				
+				changeDeps.add(firstToSecondDep);
+				changeDeps.add(secondToFirstDep);
+			}
+		}
+		return changeDeps;
+	}
+	
+	public CoChangeGraph getCoChangeGraph() throws DatabaseException {
 		
 		DependencyDAO dependencyDAO = new DependencyDAO();
-		
-		UndirectedSparseGraph<FileDependencyObject, CoChangeHistory> coChangeGraph = 
-				new UndirectedSparseGraph<FileDependencyObject, CoChangeHistory>();
 		
 		List<DependencyGraph> dependencyGraphs = 
 				dependencyDAO.findAllDependenciesByAnalysis(
 						this.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
 		
-		for(DependencyGraph dependencyGraph : dependencyGraphs){
-			
-			TaskDependencyGraph taskDependency = (TaskDependencyGraph) dependencyGraph;
-			for(RawDependency<FileDependencyObject,FileDependencyObject,Commit> rawDep : taskDependency.getRawDependencies()){
-				
-				CoChangeHistory coChangeHistory = coChangeGraph.findEdge(rawDep.getClient(),rawDep.getSupplier());
-				if (coChangeHistory == null){
-					edgeCount++;
-					coChangeHistory = new CoChangeHistory(edgeCount);
-					coChangeHistory.addCommit(rawDep.getLabel());
-					coChangeGraph.addEdge(coChangeHistory, rawDep.getClient(), rawDep.getSupplier());
-				}
-				else{
-					coChangeHistory.addCommit(rawDep.getLabel());
-				}
-			}
-		}
-		
+		CoChangeGraph coChangeGraph = new CoChangeGraph(dependencyGraphs);
 		return coChangeGraph;
 	}
 	

@@ -1,15 +1,15 @@
-package br.usp.ime.lapessc.xflow2.entity;
+package br.usp.ime.lapessc.xflow2.entity.cochange;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CoChangeHistory {
+import br.usp.ime.lapessc.xflow2.entity.Commit;
 
-	private int id;
+public class CoChangeHistory {
 	private List<Commit> commits = new ArrayList<Commit>();
 	
-	public CoChangeHistory(int id){
-		this.id = id;
+	public CoChangeHistory(){
+
 	}
 	
 	public void addCommit(Commit commit){
@@ -19,16 +19,12 @@ public class CoChangeHistory {
 	public List<Commit> getCommits(){
 		return commits;
 	}
-	
-	public Integer getId(){
-		return id;
-	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + id;
+		result = prime * result + ((commits == null) ? 0 : commits.hashCode());
 		return result;
 	}
 
@@ -41,9 +37,13 @@ public class CoChangeHistory {
 		if (getClass() != obj.getClass())
 			return false;
 		CoChangeHistory other = (CoChangeHistory) obj;
-		if (id != other.id)
+		if (commits == null) {
+			if (other.commits != null)
+				return false;
+		} else if (!commits.equals(other.commits))
 			return false;
 		return true;
 	}
+	
 	
 }
