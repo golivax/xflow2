@@ -1,10 +1,8 @@
 package br.usp.ime.lapessc.xflow2.entity.cochange;
 
 import java.util.Collection;
-import java.util.List;
 
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.RawDependency;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
@@ -15,14 +13,13 @@ public class CoChangeGraph {
 
 	private UndirectedGraph<CoChangeGraphVertex, CoChangeGraphEdge> jungGraph;
 	
-	public CoChangeGraph(List<DependencyGraph> dependencyGraphs){
+	public CoChangeGraph(Collection<TaskDependencyGraph> taskDependencyGraphs){
 				
 		jungGraph =	new UndirectedSparseGraph<CoChangeGraphVertex, CoChangeGraphEdge>();
 		
-		for(DependencyGraph dependencyGraph : dependencyGraphs){
+		for(TaskDependencyGraph taskDependencyGraph : taskDependencyGraphs){
 			
-			TaskDependencyGraph taskDependency = (TaskDependencyGraph) dependencyGraph;
-			for(RawDependency<FileDependencyObject,FileDependencyObject,Commit> rawDep : taskDependency.getRawDependencies()){
+			for(RawDependency<FileDependencyObject,FileDependencyObject,Commit> rawDep : taskDependencyGraph.getRawDependencies()){
 				
 				CoChangeGraphVertex v1 = new CoChangeGraphVertex(rawDep.getClient(), jungGraph);
 				CoChangeGraphVertex v2 = new CoChangeGraphVertex(rawDep.getSupplier(), jungGraph);

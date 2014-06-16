@@ -157,6 +157,14 @@ public class ChangeDependency {
 		return confidence;
 	}
 	
+	public String getClient(){
+		return rhs;
+	}
+	
+	public String getSupplier(){
+		return lhs;
+	}
+	
 	public String toString(){
 		String rule = lhs + " -> " + rhs;
 		String support = "Support: " + this.support;

@@ -1,6 +1,7 @@
 package br.usp.ime.lapessc.xflow2.core.processors.cochanges;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,7 @@ import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
+import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraph;
 import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraphEdge;
 import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraphVertex;
@@ -57,7 +59,7 @@ public final class CoChangesAnalysis extends Analysis {
 			
 			if(!pair.getFirst().equals(pair.getSecond())){
 				
-				//Change Dep: first --> second
+				//Assoc rule: first --> second
 				ChangeDependency firstToSecondDep = new ChangeDependency(
 						pair.getFirst().getFileDependencyObject().getFilePath(), 
 						pair.getFirst().getFileDependencyObject().getAssignedStamp(),
@@ -66,7 +68,7 @@ public final class CoChangesAnalysis extends Analysis {
 						coChangeGraph.findEdge(pair.getFirst(), pair.getFirst()).getCoChangeHistory().getCommits(), 
 						coChangeGraph.findEdge(pair.getSecond(), pair.getSecond()).getCoChangeHistory().getCommits());
 				
-				//Change Dep: second --> first				
+				//Assoc rule: second --> first				
 				ChangeDependency secondToFirstDep = new ChangeDependency(
 						pair.getSecond().getFileDependencyObject().getFilePath(),
 						pair.getSecond().getFileDependencyObject().getAssignedStamp(),
@@ -87,11 +89,11 @@ public final class CoChangesAnalysis extends Analysis {
 		
 		DependencyDAO dependencyDAO = new DependencyDAO();
 		
-		List<DependencyGraph> dependencyGraphs = 
+		Collection<TaskDependencyGraph> taskDependencyGraphs = 
 				dependencyDAO.findAllDependenciesByAnalysis(
-						this.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
+						this.getId(), DependencyGraphType.TASK_DEPENDENCY);
 		
-		CoChangeGraph coChangeGraph = new CoChangeGraph(dependencyGraphs);
+		CoChangeGraph coChangeGraph = new CoChangeGraph(taskDependencyGraphs);
 		return coChangeGraph;
 	}
 	

@@ -5,6 +5,7 @@ import java.util.List;
 
 import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
+import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -46,7 +47,8 @@ public class DependencyDAO extends BaseDAO<DependencyGraph> {
 		return super.findByQuery(clazz, query, parameters);
 	}
 	
-	public List<DependencyGraph> findAllDependenciesByAnalysis(final long analysisID, final int dependencyType)throws DatabaseException {
+	//FIXME: Polymorphic query
+	public Collection findAllDependenciesByAnalysis(final long analysisID, final DependencyGraphType dependencyGraphType) throws DatabaseException {
 		final String query = "SELECT dep from dependency dep " +
 				"join dep.associatedEntry as entry where " +
 				"dep.associatedAnalysis.id = :analysisID " +
@@ -54,9 +56,9 @@ public class DependencyDAO extends BaseDAO<DependencyGraph> {
 				"order by entry.revision";
 		
 		final Object[] parameter1 = new Object[]{"analysisID", analysisID};
-		final Object[] parameter2 = new Object[]{"dependencyType", dependencyType};
+		final Object[] parameter2 = new Object[]{"dependencyType", dependencyGraphType.getValue()};
 		
-		return (List<DependencyGraph>)findByQuery(DependencyGraph.class, query, parameter1, parameter2);
+		return findByQuery(DependencyGraph.class, query, parameter1, parameter2);
 	}
 	
 	public DependencyGraph findDependencyByEntry(final long analysisID, final long entryID, final int dependencyType) throws DatabaseException {
