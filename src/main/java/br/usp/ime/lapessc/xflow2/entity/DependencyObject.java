@@ -10,24 +10,28 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity(name="dependency_object")
 @Inheritance(strategy=InheritanceType.JOINED)
 public abstract class DependencyObject {
+	
+	public DependencyObject() {
+	
+	}
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "DEPENDENCY_OBJECT_ID")
 	private long id;
 	
-	@Column(name = "DEPENDENCY_STAMP", nullable = false)
-	private int assignedStamp;
-	
 	@ManyToOne
 	@JoinColumn(name = "ANALYSIS_ID", nullable = false)
 	private Analysis analysis;
 	
 	@Column(name = "OBJECT_TYPE", nullable = false)
-	final private int objectType;
+	private int objectType;
 	
 	
 	public DependencyObject(final int objectType) {
@@ -37,18 +41,10 @@ public abstract class DependencyObject {
 	public abstract String getDependencyObjectName();
 	
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-
-	public int getAssignedStamp() {
-		return assignedStamp;
-	}
-
-	public void setAssignedStamp(final int assignedStamp) {
-		this.assignedStamp = assignedStamp;
-	}
-
+	
 	public Analysis getAnalysis() {
 		return analysis;
 	}

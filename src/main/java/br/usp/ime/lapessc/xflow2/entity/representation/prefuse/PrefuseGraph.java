@@ -33,6 +33,7 @@
 
 package br.usp.ime.lapessc.xflow2.entity.representation.prefuse;
 
+import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Table;
@@ -102,6 +103,10 @@ public class PrefuseGraph{
 		for (int i = 0; i < edgeFields.length; i++) {
 			edges.addColumn(edgeFields[i], edgeClasses[i]);
 		}
+	}
+	
+	public Edge addEdge(Node n1, Node n2){
+		return prefuseGraph.addEdge(n1, n2);
 	}
 	
 }

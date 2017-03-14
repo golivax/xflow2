@@ -423,24 +423,5 @@ public class CommitDAO extends BaseDAO<Commit>{
 		
 		return findUnique(Commit.class, query, parameter1, parameter2);
 	}
-	
-	public List<Commit> getCommitsFromDependencyObjectStamp(
-			Analysis analysis, int depObjStamp, int depType) throws DatabaseException{
-		
-		 String query = "SELECT assocEntry FROM dependency_set as dset " +
-				"JOIN dset.supplier AS depObj " +
-				"JOIN dset.associatedDependency AS assocDep " +
-		 		"JOIN assocDep.associatedEntry AS assocEntry " +
-		 		"JOIN assocDep.associatedAnalysis AS assocAnalysis " +
-		 		"WHERE depObj.assignedStamp = :depObjStamp " +
-		 		"AND assocDep.type = :depType " +
-		 		"AND assocAnalysis = :analysis";
-		 
-		final Object[] parameter1 = new Object[]{"depObjStamp", depObjStamp};
-		final Object[] parameter2 = new Object[]{"depType", depType};
-		final Object[] parameter3 = new Object[]{"analysis", analysis};
-
-		return (List<Commit>) findObjectsByQuery(query, parameter1, parameter2, parameter3);
-	}
 
 }

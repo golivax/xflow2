@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -72,7 +73,7 @@ public class Author {
 	@Column(name = "AUTH_LASTCONTRIB", nullable = false)
 	private Date lastContribution;
 	
-	@OneToMany(mappedBy = "author")
+	@OneToMany(mappedBy = "author", cascade = CascadeType.REMOVE)
 	private List<Commit> entries = new ArrayList<Commit>();
 
 	public Author() {
@@ -119,9 +120,32 @@ public class Author {
 	
 	public void setVcsMiningProject(final VCSMiningProject project) {
 		this.vcsMiningProject = project;
+		project.addAuthor(this);
 	}
 
 	public VCSMiningProject getProject() {
 		return vcsMiningProject;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Author other = (Author) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

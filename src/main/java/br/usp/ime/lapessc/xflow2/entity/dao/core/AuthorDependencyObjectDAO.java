@@ -54,30 +54,6 @@ public class AuthorDependencyObjectDAO extends DependencyObjectDAO<AuthorDepende
 	}
 
 	@Override
-	public int checkDependencyStamp(final AuthorDependencyObject dependedObj) throws DatabaseException {
-		final String query = "SELECT authordep from author_dependency authordep where authordep.author = :author and authordep.analysis = :analysis";
-		final Object[] parameter1 = new Object[]{"author", dependedObj.getAuthor()};
-		final Object[] parameter2 = new Object[]{"analysis", dependedObj.getAnalysis()};
-
-		final List<AuthorDependencyObject> authordep = (List<AuthorDependencyObject>) findByQuery(AuthorDependencyObject.class, query, parameter1, parameter2);
-		if(authordep.isEmpty()){
-			final String subquery = "SELECT MAX(authordep.assignedStamp) from dependency_object authordep where authordep.analysis = :analysis and authordep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
-			return getIntegerValueByQuery(subquery, parameter2) + 1;
-		}
-		else{
-			return authordep.get(0).getAssignedStamp();			
-		}
-	}
-	
-	@Override
-	public int checkHighestStamp(Analysis analysis) throws DatabaseException {
-		final String query = "SELECT MAX(authordep.assignedStamp) from dependency_object authordep where authordep.analysis = :analysis and authordep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
-		final Object[] parameter1 = new Object[]{"analysis", analysis};
-		
-		return getIntegerValueByQuery(query, parameter1);
-	}
-
-	@Override
 	public List<AuthorDependencyObject> findAllDependencyObjsUntilDependency(final DependencyGraph dependency) throws DatabaseException {
 		if(dependency.isDirectedDependency()){
 			String query = "SELECT dep from author_dependency dep, dependency d where dep.analysis = :analysis and d.id <= :dependencyID and d in elements(dep.dependencies)";
@@ -125,6 +101,19 @@ public class AuthorDependencyObjectDAO extends DependencyObjectDAO<AuthorDepende
 			return null;
 		}
 		return dependencyObjects.get(0);
+	}
+
+	public List<AuthorDependencyObject> findAllByAnalysis(Analysis analysis) throws DatabaseException{
+		final String query = "SELECT auth_dep_obj from author_dependency as auth_dep_obj where "
+				+ "auth_dep_obj.analysis.id = :analysisID";
+		
+		final Object[] parameter1 = new Object[]{"analysisID", analysis.getId()};
+		
+		final List<AuthorDependencyObject> dependencyObjects = 
+				(List<AuthorDependencyObject>) findByQuery(
+						AuthorDependencyObject.class, query, parameter1);
+		
+		return dependencyObjects;		
 	}
 
 }

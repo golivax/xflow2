@@ -43,7 +43,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-@Entity(name = "swproject")
+@Entity(name = "sw_prj")
 public class SoftwareProject implements Serializable{
 
 	private static final long serialVersionUID = 7907150525824812352L;
@@ -52,14 +52,17 @@ public class SoftwareProject implements Serializable{
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "PRJ_ID")
+	@Column(name = "SW_PRJ_ID")
 	private long id;
 
-	@Column(name = "PRJ_NAME", nullable = false)
+	@Column(name = "SW_PRJ_NAME", nullable = false)
 	private String name;
 	
 	@ManyToOne(cascade = CascadeType.ALL)
 	private VCSRepository vcsRepository;
+	
+	//For JPA use only
+	public SoftwareProject(){}
 	
 	public SoftwareProject(String name){
 		this.name = name;

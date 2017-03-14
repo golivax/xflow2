@@ -33,7 +33,12 @@ public class ZoomControl implements VisualizationControl<LineVisualization>, Mou
 		visualizationControlled = (LineVisualization) ((JComponent) visualizationComponent.getParent()).getClientProperty("Visualization Instance");
 		Metrics metricsSession = (Metrics) ((JComponent) visualizationComponent.getParent()).getClientProperty("Metrics Session");
 		
-		zoomSlider = new JRangeSlider((int) metricsSession.getAssociatedAnalysis().getFirstEntry().getRevision(), (int) metricsSession.getAssociatedAnalysis().getLastEntry().getRevision(), (int) metricsSession.getAssociatedAnalysis().getFirstEntry().getRevision(), (int) metricsSession.getAssociatedAnalysis().getLastEntry().getRevision(), JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
+		zoomSlider = new JRangeSlider(
+				metricsSession.getAssociatedAnalysis().getFirstEntry().getRevision().intValue(), 
+				metricsSession.getAssociatedAnalysis().getLastEntry().getRevision().intValue(), 
+				metricsSession.getAssociatedAnalysis().getFirstEntry().getRevision().intValue(), 
+				metricsSession.getAssociatedAnalysis().getLastEntry().getRevision().intValue(), 
+				JRangeSlider.HORIZONTAL, JRangeSlider.LEFTRIGHT_TOPBOTTOM);
 		zoomSlider.setThumbColor(null);
 		setupZoomSliderMouseEvent();
 		

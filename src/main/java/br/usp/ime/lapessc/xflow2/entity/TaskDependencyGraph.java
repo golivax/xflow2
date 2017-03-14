@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 public class TaskDependencyGraph extends DependencyGraph<FileDependencyObject, FileDependencyObject> {
 
 	//For JPA use only
-	private TaskDependencyGraph(){}
+	public TaskDependencyGraph(){}
 
 	public TaskDependencyGraph(boolean isDirected){
 		super(isDirected);

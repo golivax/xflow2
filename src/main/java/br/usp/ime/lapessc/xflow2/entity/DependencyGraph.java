@@ -16,6 +16,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity(name="dependency")
 @Inheritance(strategy=InheritanceType.JOINED)
 public abstract class DependencyGraph<Client extends DependencyObject, Supplier extends DependencyObject> {
@@ -33,6 +36,7 @@ public abstract class DependencyGraph<Client extends DependencyObject, Supplier 
 	private Commit associatedEntry;
 	
 	@ManyToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ANALYSIS_ID", nullable = false)
 	private Analysis associatedAnalysis;
 	
@@ -53,12 +57,21 @@ public abstract class DependencyGraph<Client extends DependencyObject, Supplier 
 	public long getId() {
 		return id;
 	}
+	
+	public void addDependency(DependencySet<Client, Supplier> dependencySet){
+		if(dependencies == null){
+			this.dependencies = new HashSet<>();
+		}
+		
+		dependencySet.setAssociatedDependency(this);
+		dependencies.add(dependencySet);
+	}
 
 	public void setDependencies(Set<DependencySet<Client, Supplier>> dependencies) {
-		this.dependencies = dependencies;
 		for (DependencySet<Client, Supplier> dependencySet : dependencies) {
 			dependencySet.setAssociatedDependency(this);
 		}
+		this.dependencies = dependencies;
 	}
 
 	public Set<DependencySet<Client, Supplier>> getDependencies() {
@@ -121,4 +134,19 @@ public abstract class DependencyGraph<Client extends DependencyObject, Supplier 
 		return rawDeps;
 	}
 	
+	public Set<Supplier> getSuppliers(){
+		Set<Supplier> suppliers = new HashSet<>();
+		for(DependencySet<Client,Supplier> dependencySet : getDependencies()){
+			suppliers.add(dependencySet.getSupplier());
+		}
+		return suppliers;
+	}
+	
+	public String toString(){
+		String s = new String();
+		for(RawDependency<Client, Supplier, Commit> rawDep: getRawDependencies()){
+			s += rawDep.getClient() + " --> " + rawDep.getSupplier() + "\n"; 
+		}
+		return s;
+	}
 }

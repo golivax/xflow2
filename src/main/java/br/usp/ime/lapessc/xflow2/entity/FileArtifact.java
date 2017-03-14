@@ -36,11 +36,16 @@ package br.usp.ime.lapessc.xflow2.entity;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity(name = "file")
+@Table(indexes = {
+		@Index(name="file_operation_index", columnList="FILE_OPERATION"),
+		@Index(name="file_path_index", columnList="PATH")})
 public class FileArtifact extends Resource implements Comparable<FileArtifact>{
 	
 	/**

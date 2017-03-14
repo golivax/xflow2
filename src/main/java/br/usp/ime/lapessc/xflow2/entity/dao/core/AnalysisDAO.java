@@ -34,8 +34,10 @@
 package br.usp.ime.lapessc.xflow2.entity.dao.core;
 
 import java.util.Collection;
+import java.util.List;
 
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
+import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
@@ -65,6 +67,14 @@ public class AnalysisDAO extends BaseDAO<Analysis> {
 	@Override
 	public final Collection<Analysis> findAll(final Class<? extends Analysis> myClass) throws DatabaseException {
 		return super.findAll(myClass);
+	}
+	
+	public List<Commit> getCommits(Analysis analysis) throws DatabaseException {
+		final String query = "select distinct d.associatedEntry FROM "
+				+ "dependency d where d.associatedAnalysis = :analysis";
+		
+		final Object[] parameter1 = new Object[]{"analysis", analysis};
+		return (List<Commit>) findObjectsByQuery(query, parameter1);
 	}
 
 }

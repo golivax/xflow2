@@ -19,7 +19,8 @@ public class CoChangeGraph {
 		
 		for(TaskDependencyGraph taskDependencyGraph : taskDependencyGraphs){
 			
-			for(RawDependency<FileDependencyObject,FileDependencyObject,Commit> rawDep : taskDependencyGraph.getRawDependencies()){
+			for(RawDependency<FileDependencyObject,FileDependencyObject,Commit> rawDep : 
+					taskDependencyGraph.getRawDependencies()){
 				
 				CoChangeGraphVertex v1 = new CoChangeGraphVertex(rawDep.getClient(), jungGraph);
 				CoChangeGraphVertex v2 = new CoChangeGraphVertex(rawDep.getSupplier(), jungGraph);

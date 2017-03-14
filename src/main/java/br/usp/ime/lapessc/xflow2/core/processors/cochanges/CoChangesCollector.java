@@ -9,23 +9,16 @@ import java.util.Set;
 
 import br.usp.ime.lapessc.xflow2.core.processors.DependenciesIdentifier;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
-import br.usp.ime.lapessc.xflow2.entity.Author;
-import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirementsGraph;
+import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
-import br.usp.ime.lapessc.xflow2.entity.TaskAssignmentGraph;
+import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
+import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.MatrixFactory;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.repository.vcs.dao.CommitDAO;
 import br.usp.ime.lapessc.xflow2.util.Filter;
@@ -38,23 +31,15 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 	
 	private Filter filter;
 	
-	// MATRICES FOR COORDINATION REQUIREMENTS CALCS
-	private Matrix taskAssignmentMatrix;
-	private Matrix taskDependencyMatrix;
-	
-	private int latestFileStampAssigned;
-	private int latestAuthorStampAssigned;
-	
 	@Override
-	public final void dataCollect(List<Long> revisions, Analysis analysis, 
+	public final void identifyDependencies(List<Long> revisions, Analysis analysis, 
 			Filter filter) throws DatabaseException {
 		
 		this.analysis = (CoChangesAnalysis) analysis;
 		this.filter = filter;
-		initiateCache();
 		
 		CommitDAO commitDAO = new CommitDAO();
-		DependencyDAO dependencyDAO = new DependencyDAO();
+		DependencyGraphDAO dependencyDAO = new DependencyGraphDAO();
 		
 		System.out.println("** Starting CoChanges analysis **");
 	
@@ -64,7 +49,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 					analysis.getProject(), revision);			
 			
 			System.out.print(
-					"- Processing entry: " + commit.getRevision() + 
+					"- Processing commit: " + commit.getRevision() + 
 					" (" + revision + ")\n");
 			
 			System.out.print("* Collecting task dependencies...");
@@ -77,57 +62,10 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 				final TaskDependencyGraph taskDependency = new TaskDependencyGraph(false);
 				taskDependency.setAssociatedAnalysis(analysis);
 				taskDependency.setAssociatedEntry(commit);
-	
-				//Sets on both sides (bi-directional association)
-				taskDependency.setDependencies(fileToFileDependencies);
+				taskDependency.setDependencies(fileToFileDependencies); //Sets on both sides (bi-directional association)
 						
 				dependencyDAO.insert(taskDependency);						
 				System.out.print(" done!\n");
-					
-				System.out.print("* Collecting tasks assignments...");
-				
-				final TaskAssignmentGraph taskAssignment = new TaskAssignmentGraph();
-				taskAssignment.setAssociatedAnalysis(this.analysis);
-				taskAssignment.setAssociatedEntry(commit);
-				taskAssignment.setDirectedDependency(true);
-				
-				final Set<DependencySet<FileDependencyObject,AuthorDependencyObject>> authorToFileDependencies = 
-						gatherAuthorToFileDependencies(commit.getAuthor(), fileToFileDependencies);
-				
-				for (DependencySet<FileDependencyObject,AuthorDependencyObject> dependencySet : authorToFileDependencies) {
-					dependencySet.setAssociatedDependency(taskAssignment);
-				}
-				
-				taskAssignment.setDependencies(authorToFileDependencies);
-				dependencyDAO.insert(taskAssignment);
-				System.out.print(" done!\n");
-				
-			
-				if(this.analysis.isCoordinationRequirementPersisted()){
-			
-					System.out.print("* Calculating coordination requirements...");
-					
-					final CoordinationRequirementsGraph coordinationRequirement = 
-							new CoordinationRequirementsGraph();
-					
-					coordinationRequirement.setAssociatedAnalysis(
-							this.analysis);
-					
-					coordinationRequirement.setAssociatedEntry(commit);
-					coordinationRequirement.setDirectedDependency(false);
-					
-					final Set<DependencySet<AuthorDependencyObject, AuthorDependencyObject>> coordinationDependencies = 
-							gatherCoordinationRequirements(taskDependency, taskAssignment);
-					
-					for (DependencySet<AuthorDependencyObject, AuthorDependencyObject> dependencySet : coordinationDependencies) {
-						dependencySet.setAssociatedDependency(coordinationRequirement);
-					}
-					
-					coordinationRequirement.setDependencies(coordinationDependencies);
-					dependencyDAO.insert(coordinationRequirement);
-					System.out.print(" done!\n");
-				}
-
 			} else {
 				System.out.println("\nSkipped. No dependency collected on specified entry.");
 			}
@@ -138,22 +76,10 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 		}
 	}
 
-	private void initiateCache() throws DatabaseException {
-		dependencyObjectsCache = new HashMap<String, DependencyObject>();
-		
-		latestFileStampAssigned = new FileDependencyObjectDAO().checkHighestStamp(analysis);
-		latestAuthorStampAssigned = new AuthorDependencyObjectDAO().checkHighestStamp(analysis);
-		taskAssignmentMatrix = MatrixFactory.createMatrix();
-		taskDependencyMatrix = MatrixFactory.createMatrix();
-	}
-
 	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherFileToFileDependencies(List<FileArtifact> changedFiles) throws DatabaseException {
 		
 		FileDependencyObjectDAO dependencyObjDAO = 
 				new FileDependencyObjectDAO();
-		
-		Set<DependencySet<FileDependencyObject, FileDependencyObject>> setOfDependencySets = 
-				new HashSet<DependencySet<FileDependencyObject, FileDependencyObject>>();
 		
 		List<FileDependencyObject> fileDependencyObjectList = 
 				new ArrayList<FileDependencyObject>();
@@ -166,13 +92,11 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 				
 				//Added file
 				if(changedFile.getOperationType() == 'A'){
-					latestFileStampAssigned++;
 					
 					fileDependencyObject = new FileDependencyObject();
 					fileDependencyObject.setAnalysis(analysis);
 					fileDependencyObject.setFile(changedFile);
 					fileDependencyObject.setFilePath(changedFile.getPath());
-					fileDependencyObject.setAssignedStamp(latestFileStampAssigned);
 					
 					dependencyObjDAO.insert(fileDependencyObject);
 				
@@ -192,13 +116,11 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 									changedFile.getPath());
 						
 						if(addedFileReference != null){
-							latestFileStampAssigned++;
 
 							fileDependencyObject = new FileDependencyObject();
 							fileDependencyObject.setAnalysis(analysis);
 							fileDependencyObject.setFile(changedFile);
 							fileDependencyObject.setFilePath(changedFile.getPath());
-							fileDependencyObject.setAssignedStamp(latestFileStampAssigned);
 							
 							dependencyObjDAO.insert(fileDependencyObject);
 						}
@@ -212,105 +134,33 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 		}
 
 		//Builds the set of DependencySets
+		Set<DependencySet<FileDependencyObject, FileDependencyObject>> setOfDependencySets = 
+				new HashSet<DependencySet<FileDependencyObject, FileDependencyObject>>();
+		
 		for (int i = 0; i < fileDependencyObjectList.size(); i++) {
 			
+			FileDependencyObject supplier = fileDependencyObjectList.get(i);
+			
+			//Each entry denotes a dependency from a client (key) to the 
+			//supplier with a certain strength (value)
 			Map<FileDependencyObject, Integer> dependenciesMap = 
 				new HashMap<FileDependencyObject, Integer>();
 			
 			for (int j = i; j < fileDependencyObjectList.size(); j++) {
-				dependenciesMap.put(fileDependencyObjectList.get(j), 1);
+				FileDependencyObject client = fileDependencyObjectList.get(j);
+				dependenciesMap.put(client, 1);
 			}
 			
 			DependencySet<FileDependencyObject, FileDependencyObject> dependencySet = 
 				new DependencySet<FileDependencyObject, FileDependencyObject>();
-			dependencySet.setSupplier(fileDependencyObjectList.get(i));
+			
+			dependencySet.setSupplier(supplier);
 			dependencySet.setClientsMap(dependenciesMap);
+			
 			setOfDependencySets.add(dependencySet);
 		}
 		
 		return setOfDependencySets;
 	}
 	
-	private Set<DependencySet<FileDependencyObject,AuthorDependencyObject>> gatherAuthorToFileDependencies(
-			Author author, Set<DependencySet<FileDependencyObject, FileDependencyObject>> fileDependencies) throws DatabaseException {
-		
-		final AuthorDependencyObjectDAO authorDependencyDAO = new AuthorDependencyObjectDAO();
-		
-		final Set<DependencySet<FileDependencyObject,AuthorDependencyObject>> dependenciesSet = 
-				new HashSet<DependencySet<FileDependencyObject,AuthorDependencyObject>>();
-		
-		final AuthorDependencyObject dependedAuthor;
-		if(dependencyObjectsCache.containsKey(author.getName())){
-			dependedAuthor = (AuthorDependencyObject) dependencyObjectsCache.get(author.getName());
-		} else {
-			latestAuthorStampAssigned++;
-			
-			dependedAuthor = new AuthorDependencyObject();
-			dependedAuthor.setAnalysis(analysis);
-			dependedAuthor.setAssignedStamp(latestAuthorStampAssigned);
-			dependedAuthor.setAuthor(author);
-			
-			authorDependencyDAO.insert(dependedAuthor);
-			dependencyObjectsCache.put(author.getName(), dependedAuthor);
-			dependencyObjectsCache.put("\\u0A"+latestAuthorStampAssigned, dependedAuthor);
-		}
-			
-		//Builds the set of dependency objects
-		final Map<FileDependencyObject, Integer> dependenciesMap = new HashMap<FileDependencyObject, Integer>();
-		for (DependencySet<FileDependencyObject, FileDependencyObject> fileDependency : fileDependencies) {
-			dependenciesMap.put(fileDependency.getSupplier(), 1);
-		}
-
-		DependencySet<FileDependencyObject,AuthorDependencyObject> dependencySet = 
-				new DependencySet<FileDependencyObject,AuthorDependencyObject>();
-		
-		dependencySet.setSupplier(dependedAuthor);
-		dependencySet.setClientsMap(dependenciesMap);
-		
-		dependenciesSet.add(dependencySet);
-	    return dependenciesSet;
-	}
-	
-	
-	private Set<DependencySet<AuthorDependencyObject, AuthorDependencyObject>> gatherCoordinationRequirements(final TaskDependencyGraph taskDependency, final TaskAssignmentGraph taskAssignment) throws DatabaseException {
-
-		final Set<DependencySet<AuthorDependencyObject, AuthorDependencyObject>> coordinationDependencies = new HashSet<DependencySet<AuthorDependencyObject, AuthorDependencyObject>>();
-		
-		Matrix entryTaskDependencyMatrix = analysis.processDependencyMatrix(taskDependency);
-		Matrix entryTaskAssignmentMatrix = analysis.processDependencyMatrix(taskAssignment);
-
-		taskDependencyMatrix = entryTaskDependencyMatrix.sumDifferentOrderMatrix(taskDependencyMatrix);
-		taskAssignmentMatrix = entryTaskAssignmentMatrix.sumDifferentOrderMatrix(taskAssignmentMatrix);
-		
-		entryTaskAssignmentMatrix = null;
-		entryTaskDependencyMatrix = null;
-		
-		Matrix coordReq = taskAssignmentMatrix.multiply(taskDependencyMatrix).multiply(taskAssignmentMatrix.getTransposeMatrix());
-		for (int i = 0; i < coordReq.getRows(); i++) {
-			DependencySet<AuthorDependencyObject, AuthorDependencyObject> authorDependencies = new DependencySet<AuthorDependencyObject, AuthorDependencyObject>();
-			final AuthorDependencyObject dependedAuthor;
-			if(dependencyObjectsCache.containsKey("\\u0A"+i)){
-				dependedAuthor = (AuthorDependencyObject) dependencyObjectsCache.get("\\u0A"+i);
-			} else {
-				dependedAuthor = null;
-			}
-			
-			Map<AuthorDependencyObject, Integer> dependenciesMap = new HashMap<AuthorDependencyObject, Integer>();
-			for (int j = 0; j < coordReq.getColumns(); j++) {
-				final AuthorDependencyObject dependentAuthor;
-				
-				if(dependencyObjectsCache.containsKey("\\u0A"+j)){
-					dependentAuthor = (AuthorDependencyObject) dependencyObjectsCache.get("\\u0A"+j);
-				} else {
-					dependentAuthor = null;
-				}
-				
-				dependenciesMap.put(dependentAuthor, coordReq.getValueAt(j, i));
-			}
-			authorDependencies.setClientsMap(dependenciesMap);
-			authorDependencies.setSupplier(dependedAuthor);
-			coordinationDependencies.add(authorDependencies);
-		}
-		return coordinationDependencies;
-	}
 }

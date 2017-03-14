@@ -1,3 +1,4 @@
+
 /* 
  * 
  * XFlow
@@ -41,26 +42,11 @@ import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public class DatabaseManager {
 
-	private static EntityManagerFactory emf = null;
-	private static EntityManager em = null;
-		
-	private DatabaseManager() throws DatabaseException {		
-		 emf = Persistence.createEntityManagerFactory("xflow-persistence-unit");
-	     em = emf.createEntityManager();
-	}
-	
-	private synchronized static EntityManagerFactory getManagerFactory() 
-			throws DatabaseException {
-		
-		if (emf == null) {
-			new DatabaseManager();
-		}
-		return emf;
-	}
+	private static EntityManagerFactory emf = 
+			Persistence.createEntityManagerFactory("xflow-persistence-unit");
 
 	public static EntityManager getDatabaseSession() throws DatabaseException {
-		if (em == null)
-			em = getManagerFactory().createEntityManager();
+		EntityManager em = emf.createEntityManager();
 		return em;
 	}
 	

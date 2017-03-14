@@ -1,25 +1,18 @@
 package br.usp.ime.lapessc.xflow2.core.processors.callgraph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import br.usp.ime.lapessc.xflow2.core.processors.DependenciesIdentifier;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
-import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
+import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -30,20 +23,15 @@ public class CallGraphCollector implements DependenciesIdentifier {
 
 	private CallGraphAnalysis analysis;	
 	private Filter filter;
-	private int latestFileStampAssigned;
-	private int latestAuthorStampAssigned;
-	
-	private Map<String, AuthorDependencyObject> authorsStampsMap;
 	
 	@Override
-	public final void dataCollect(List<Long> revisions, Analysis analysis, Filter filter) throws DatabaseException {
+	public final void identifyDependencies(List<Long> revisions, Analysis analysis, Filter filter) throws DatabaseException {
 		this.analysis = (CallGraphAnalysis) analysis;
 		this.filter = filter;
-		initiateCache();
 		
 		ArtifactDAO artifactDAO = new ArtifactDAO();
 		CommitDAO entryDAO = new CommitDAO();
-		DependencyDAO dependencyDAO = new DependencyDAO();
+		DependencyGraphDAO dependencyDAO = new DependencyGraphDAO();
 		
 		System.out.println("** Starting Structural analysis **");
 		
@@ -114,13 +102,6 @@ public class CallGraphCollector implements DependenciesIdentifier {
 		}
 		
 	}
-
-	private void initiateCache() throws DatabaseException {
-		latestFileStampAssigned = new FileDependencyObjectDAO().checkHighestStamp(analysis);
-		latestAuthorStampAssigned = new AuthorDependencyObjectDAO().checkHighestStamp(analysis);
-		
-		authorsStampsMap = new HashMap<String, AuthorDependencyObject>();
-	}
 	
 	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherStructuralDependenciesOld(List<FileArtifact> changedFiles) throws DatabaseException {
 		FileDependencyObjectDAO dependencyObjDAO = new FileDependencyObjectDAO();
@@ -134,13 +115,11 @@ public class CallGraphCollector implements DependenciesIdentifier {
 				
 				//Added file
 				if(changedFile.getOperationType() == 'A'){
-					latestFileStampAssigned++;
 					
 					dependencyObject = new FileDependencyObject();
 					dependencyObject.setAnalysis(analysis);
 					dependencyObject.setFile(changedFile);
 					dependencyObject.setFilePath(changedFile.getPath());
-					dependencyObject.setAssignedStamp(latestFileStampAssigned);
 					
 					dependencyObjDAO.insert(dependencyObject);
 				
@@ -159,13 +138,11 @@ public class CallGraphCollector implements DependenciesIdentifier {
 									changedFile.getPath());
 						
 						if(addedFileReference != null){
-							latestFileStampAssigned++;
-
+			
 							dependencyObject = new FileDependencyObject();
 							dependencyObject.setAnalysis(analysis);
 							dependencyObject.setFile(changedFile);
 							dependencyObject.setFilePath(changedFile.getPath());
-							dependencyObject.setAssignedStamp(latestFileStampAssigned);
 							
 							dependencyObjDAO.insert(dependencyObject);
 						}

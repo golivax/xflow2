@@ -167,7 +167,7 @@ public class LineRenderer implements VisualizationRenderer<LineVisualization> {
 			final XYSeries revisionsDataset = new XYSeries("Revision "+metric.getMetricName());
 			for (int i = 0; i < metricValuesTable.size(); i++) {
 				sequentialDataset.add(i, metric.getMetricValue(this.metricsSession, metricValuesTable.get(i).getEntry()));
-				revisionsDataset.add(metricValuesTable.get(i).getEntry().getRevision(), metric.getMetricValue(this.metricsSession, metricValuesTable.get(i).getEntry()));
+				revisionsDataset.add(metricValuesTable.get(i).getEntry().getRevision().longValue(), metric.getMetricValue(this.metricsSession, metricValuesTable.get(i).getEntry()));
 			}
 			this.numericDataset.addSeries(sequentialDataset);
 			this.numericDataset.addSeries(revisionsDataset);
@@ -187,7 +187,7 @@ public class LineRenderer implements VisualizationRenderer<LineVisualization> {
 			final XYSeries revisionsDataset = new XYSeries("Revision "+metric.getMetricName());
 			for (int i = 0; i < metricValuesTable.size(); i++) {
 				sequentialDataset.add(i, metric.getMetricValue(this.metricsSession, metricValuesTable.get(i).getEntry()));
-				revisionsDataset.add(metricValuesTable.get(i).getEntry().getRevision(), metric.getMetricValue(this.metricsSession, metricValuesTable.get(i).getEntry()));
+				revisionsDataset.add(metricValuesTable.get(i).getEntry().getRevision().longValue(), metric.getMetricValue(this.metricsSession, metricValuesTable.get(i).getEntry()));
 			}
 			this.numericDataset.addSeries(sequentialDataset);
 			this.numericDataset.addSeries(revisionsDataset);

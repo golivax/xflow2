@@ -42,12 +42,11 @@ import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
+import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import edu.uci.ics.jung.graph.AbstractTypedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 
-//TODO: Ainda tem coisa pra fazer aqui!
 public class JUNGGraph {
 
 	private AbstractTypedGraph<JUNGVertex, JUNGEdge> graph;
@@ -71,7 +70,7 @@ public class JUNGGraph {
 		this.graph = graph;
 	}
 	
-	public static JUNGGraph convertMatrixToJUNGGraph(final Matrix matrix, final DependencyGraph dependency) throws DatabaseException{
+	public static JUNGGraph convertMatrixToJUNGGraph(final IRealMatrix matrix, final DependencyGraph dependency) throws DatabaseException{
 		
 		final AbstractTypedGraph<JUNGVertex,JUNGEdge> graph;
 		
@@ -103,7 +102,7 @@ public class JUNGGraph {
 		return jungGraph;
 	}
 	
-	public static JUNGGraph convertMatrixToJUNGGraph(final Matrix matrix, final DependencyGraph dependency, final JUNGGraph graph) throws DatabaseException{
+	public static JUNGGraph convertMatrixToJUNGGraph(final IRealMatrix matrix, final DependencyGraph dependency, final JUNGGraph graph) throws DatabaseException{
 		
 		if(dependency.isDirectedDependency()){
 		}
@@ -120,19 +119,19 @@ public class JUNGGraph {
 		return graph;
 	}
 	
-	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformCoordinationRequirementMatrixToDirectedGraph(Matrix matrix, Analysis associatedAnalysis) throws DatabaseException {
+	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformCoordinationRequirementMatrixToDirectedGraph(IRealMatrix matrix, Analysis associatedAnalysis) throws DatabaseException {
 		return JUNGGraph.transformCoordinationRequirementMatrixToUndirectedGraph(matrix, associatedAnalysis);
 	}
 
-	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskAssignmentMatrixToDirectedGraph(Matrix matrix, Analysis associatedAnalysis) {
+	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskAssignmentMatrixToDirectedGraph(IRealMatrix matrix, Analysis associatedAnalysis) {
 		return null;
 	}
 
-	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskDependencyToDirectedGraph(Matrix matrix, Analysis associatedAnalysis) {
+	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskDependencyToDirectedGraph(IRealMatrix matrix, Analysis associatedAnalysis) {
 		return null;
 	}
 
-	private final static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformCoordinationRequirementMatrixToUndirectedGraph(final Matrix matrix, final Analysis associatedAnalysis) throws DatabaseException {
+	private final static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformCoordinationRequirementMatrixToUndirectedGraph(final IRealMatrix matrix, final Analysis associatedAnalysis) throws DatabaseException {
 		final AuthorDependencyObjectDAO fileDependencyDAO = new AuthorDependencyObjectDAO();
 		final UndirectedSparseGraph<JUNGVertex, JUNGEdge> graph = new UndirectedSparseGraph<JUNGVertex, JUNGEdge>();
 		
@@ -154,7 +153,7 @@ public class JUNGGraph {
 				graph.addVertex(vertex1);
 			}
 			for (int j = i+1; j < matrix.getColumns(); j++) {
-				final int edgeWeight = matrix.getValueAt(i,j);
+				final int edgeWeight = matrix.getValueAt(i,j).intValue();
 				if(edgeWeight > 0){
 					final AuthorDependencyObject dependentEntity = fileDependencyDAO.findDependencyObjectByStamp(associatedAnalysis, j);
 					final JUNGEdge edge = new JUNGEdge(edgeWeight);
@@ -175,7 +174,7 @@ public class JUNGGraph {
 		return graph;
 	}
 
-	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskAssignmentMatrixToUndirectedGraph(final Matrix matrix, final Analysis associatedAnalysis) throws DatabaseException {
+	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskAssignmentMatrixToUndirectedGraph(final IRealMatrix matrix, final Analysis associatedAnalysis) throws DatabaseException {
 		
 		final AuthorDependencyObjectDAO authorDependencyDAO = new AuthorDependencyObjectDAO();
 		final FileDependencyObjectDAO fileDependencyDAO = new FileDependencyObjectDAO();
@@ -192,7 +191,7 @@ public class JUNGGraph {
 			vertex1.setName(dependedAuthor.getDependencyObjectName());
 			graph.addVertex(vertex1);
 			for (int j = 0; j < matrix.getColumns(); j++) {
-				final int edgeWeight = matrix.getValueAt(i, j);
+				final int edgeWeight = matrix.getValueAt(i, j).intValue();
 				if(edgeWeight > 0){
 					final FileDependencyObject dependentFile = fileDependencyDAO.findDependencyObjectByStamp(associatedAnalysis, j); 
 					final JUNGEdge edge = new JUNGEdge(edgeWeight);
@@ -207,7 +206,7 @@ public class JUNGGraph {
 		return graph;
 	}
 
-	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskDependencyToUndirectedGraph(final Matrix matrix, final Analysis associatedAnalysis) throws DatabaseException {
+	private static AbstractTypedGraph<JUNGVertex, JUNGEdge> transformTaskDependencyToUndirectedGraph(final IRealMatrix matrix, final Analysis associatedAnalysis) throws DatabaseException {
 		
 		final FileDependencyObjectDAO fileDependencyDAO = new FileDependencyObjectDAO();
 		final UndirectedSparseGraph<JUNGVertex, JUNGEdge> graph = new UndirectedSparseGraph<JUNGVertex, JUNGEdge>();
@@ -229,7 +228,7 @@ public class JUNGGraph {
 				graph.addVertex(vertex1);
 			}
 			for (int j = i+1; j < matrix.getColumns(); j++) {
-				final int edgeWeight = matrix.getValueAt(i,j);
+				final int edgeWeight = matrix.getValueAt(i,j).intValue();
 				if(edgeWeight > 0){
 					final FileDependencyObject dependentFile = fileDependencyDAO.findDependencyObjectByStamp(associatedAnalysis, j);
 					final JUNGEdge edge = new JUNGEdge(edgeWeight);
@@ -250,7 +249,7 @@ public class JUNGGraph {
 		return graph;
 	}
 	
-	private static void transformTaskDependencyToUndirectedGraph(final Matrix matrix, final Analysis associatedAnalysis, JUNGGraph graph) throws DatabaseException {
+	private static void transformTaskDependencyToUndirectedGraph(final IRealMatrix matrix, final Analysis associatedAnalysis, JUNGGraph graph) throws DatabaseException {
 		
 		final FileDependencyObjectDAO fileDependencyDAO = new FileDependencyObjectDAO();
 		final UndirectedSparseGraph<JUNGVertex, JUNGEdge> dependencyGraph = (UndirectedSparseGraph<JUNGVertex, JUNGEdge>) graph.getGraph();
@@ -276,7 +275,7 @@ public class JUNGGraph {
 					dependencyGraph.addVertex(vertex1);
 				}
 				for (int j = i+1; j < matrix.getColumns(); j++) {
-					final int edgeWeight = matrix.getValueAt(i,j);
+					final int edgeWeight = matrix.getValueAt(i,j).intValue();
 					if(edgeWeight > 0){
 						final FileDependencyObject dependentFile = fileDependencyDAO.findDependencyObjectByStamp(associatedAnalysis, j);
 						final JUNGEdge edge = new JUNGEdge(edgeWeight);

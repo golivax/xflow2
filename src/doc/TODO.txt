@@ -1,0 +1,1 @@
+- Detect renames/moves on Git/SVN

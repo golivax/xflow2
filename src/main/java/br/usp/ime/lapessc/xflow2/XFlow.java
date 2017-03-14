@@ -37,22 +37,19 @@ import java.util.Date;
 import javax.persistence.EntityManager;
 
 import br.usp.ime.lapessc.xflow2.core.DataProcessor;
-import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
+import br.usp.ime.lapessc.xflow2.core.processors.coordreq.CoordReqsAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.VCSRepository;
-import br.usp.ime.lapessc.xflow2.entity.XFlowProject;
+import br.usp.ime.lapessc.xflow2.entity.Study;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.metrics.MetricsEvaluator;
-import br.usp.ime.lapessc.xflow2.metrics.cochange.ChangeDependenciesCalculator;
 import br.usp.ime.lapessc.xflow2.metrics.entry.EntryMetricModel;
 import br.usp.ime.lapessc.xflow2.metrics.file.FileMetricModel;
 import br.usp.ime.lapessc.xflow2.metrics.project.ProjectMetricModel;
-import br.usp.ime.lapessc.xflow2.repository.vcs.entities.VCSType;
 import br.usp.ime.lapessc.xflow2.util.Filter;
-import br.usp.ime.lapessc.xflow2.util.XFlowConfig;
 import br.usp.ime.lapessc.xflow2.util.io.Kbd;
 
 
@@ -81,7 +78,7 @@ public class XFlow {
 	*/
 	
 	public void processProject(Analysis analysis, Filter filter) throws DatabaseException {
-		DataProcessor.processEntries(analysis, filter);
+		DataProcessor.processCommits(analysis, filter);
 	}	
 	
 	public void resumeProjectProcessing(Analysis analysis, long endRevision, Filter filter, String details) throws DatabaseException {
@@ -156,7 +153,7 @@ public class XFlow {
 			e.printStackTrace();
 		}
 		*/
-	
+		
 		/**
 		try {
 
@@ -207,28 +204,15 @@ public class XFlow {
 			
 			//CoChange
 			Analysis analysis = AnalysisFactory.createCoChangesAnalysis(
-					miningProject, "CoChanges for the Moenia project", false, 
-					1204860, 1231764, 0, 0, 0, false);
+					miningProject, "CoChanges for the ArgoUML project", false, 
+					18089, 18363, 0, 0, 0, false);
 			
-			DataProcessor.processEntries(analysis, new Filter(".*?"));
+			DataProcessor.processCommits(analysis, new Filter(".*?"));
 			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		*/
-		
-		
-		try{
-			CoChangesAnalysis coChangesAnalysis = 
-					(CoChangesAnalysis) new AnalysisDAO().findById(
-					Analysis.class, 1L);
-				
-			ChangeDependenciesCalculator coChangeCalculator = new ChangeDependenciesCalculator();
-				coChangeCalculator.calculate(coChangesAnalysis);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
+		*/	
 		
 		/**
 		try {
@@ -296,22 +280,41 @@ public class XFlow {
 			e.printStackTrace();
 		}
 		*/
+		
+		try{
+			/**
+			//Calculando coordination requirements!
+			CoChangesAnalysis coChangesAnalysis = 
+					(CoChangesAnalysis)new AnalysisDAO().findById(
+					Analysis.class, 1L);
+			
+			CoordReqAnalysis coordReqAnalysis = 
+					AnalysisFactory.createCoordReqAnalysis(coChangesAnalysis);
+			
+			CoordReqCollector coordReqCollector = new CoordReqCollector();
+			coordReqCollector.run(coordReqAnalysis);
+			*/
+			
+			/**
+			CoordReqAnalysis coordReqAnalysis = 
+					(CoordReqAnalysis) new AnalysisDAO().findById(
+					Analysis.class, 4L);
+			*/
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}		
+		
 		System.out.println(new Date(System.currentTimeMillis()));
 	}
 
-	private static XFlowProject createXFlowProject() {
+	private static Study createXFlowProject() {
 		
 		String xFlowProjectName = 
 				Kbd.readString("Enter XFlow project name: ");
 				
-		XFlowProject xFlowProject = 
-				new XFlowProject(xFlowProjectName);
-		
-		String vcsURI = XFlowConfig.getInstance().getVCSConfig().getUrl();
-		VCSRepository vcsRepository = new VCSRepository(VCSType.Subversion, 
-				vcsURI);
-		
-		xFlowProject.setVcsRepository(vcsRepository);
+		Study xFlowProject = 
+				new Study(xFlowProjectName);
 		
 		try{
 			

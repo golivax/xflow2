@@ -40,7 +40,7 @@ import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
+import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public abstract class MatrixIOUtil {
@@ -145,8 +145,8 @@ public abstract class MatrixIOUtil {
 //		writer.close();
 //	}
 	
-	public static Matrix importMatrix(int documentType, String fileLocation){
-		Matrix importedMatrix = null;
+	public static IRealMatrix importMatrix(int documentType, String fileLocation){
+		IRealMatrix importedMatrix = null;
 		String fileContents = null;
 		
 		switch (documentType) {
@@ -162,11 +162,11 @@ public abstract class MatrixIOUtil {
 		return importedMatrix;
 	}
 
-	private static Matrix importFromUCINetCompatibleFile(String fileContents) {
+	private static IRealMatrix importFromUCINetCompatibleFile(String fileContents) {
 		return null;
 	}
 	
-	private static Matrix importMatrixFromCSVFile(String fileContents) {
+	private static IRealMatrix importMatrixFromCSVFile(String fileContents) {
 		return null;
 	}
 	

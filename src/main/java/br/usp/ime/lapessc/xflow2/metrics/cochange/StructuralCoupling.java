@@ -8,9 +8,11 @@ import javax.persistence.Id;
 
 import org.hibernate.annotations.Index;
 
-@Entity
+@Entity(name = "structuralcoupling")
 public class StructuralCoupling {
 
+	public StructuralCoupling(){}
+	
 	@Id
 	@Column(name = "SC_ID")
 	@GeneratedValue(strategy = GenerationType.AUTO)

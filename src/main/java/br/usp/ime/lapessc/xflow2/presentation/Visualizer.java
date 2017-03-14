@@ -140,7 +140,7 @@ public class Visualizer {
         
         
     	AnalysisDAO analysisDAO = new AnalysisDAO();
-		Analysis analysis = analysisDAO.findById(Analysis.class, 1L);
+		Analysis analysis = analysisDAO.findById(Analysis.class, 5L);
         
 		Metrics metrics = new Metrics();
 		metrics.setAssociatedAnalysis(analysis);

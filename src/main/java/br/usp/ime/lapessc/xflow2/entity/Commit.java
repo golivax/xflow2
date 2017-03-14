@@ -43,25 +43,25 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.hibernate.annotations.Index;
-
+@Table(indexes = {@Index(name="entry_rev_index", columnList="ENTRY_REV")})
 @Entity(name = "entry")
-public class Commit{
+public class Commit implements Comparable<Commit>{
 
 	@Id
 	@Column(name = "ENTRY_ID")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
-	@Index(name = "entry_rev_index")
 	@Column(name = "ENTRY_REV", nullable = false)
-	private long revision;
+	private Long revision;
 	
 	@ManyToOne
 	@JoinColumn(name = "ENTRY_PROJECT", nullable = false)
@@ -78,12 +78,15 @@ public class Commit{
 	@Column(name = "ENTRY_COMMENT", columnDefinition="MEDIUMTEXT", nullable = false)
 	private String comment;
 	
+	@Column(name = "ENTRY_RELATIVEURL")
+	private String relativeURL;
+
 	@OneToMany(mappedBy = "commit", cascade = CascadeType.ALL)
-	private List<FileArtifact> entryFiles = new ArrayList<FileArtifact>();
+	private List<FileArtifact> entryFiles = new ArrayList<>();
 	
 	//Esse cascade salva as folders puras (isto é, que estão no log)
 	@OneToMany(mappedBy = "commit", cascade = CascadeType.ALL)
-	private List<Folder> entryFolders = new ArrayList<Folder>();
+	private List<Folder> entryFolders = new ArrayList<>();
 	
 	public Commit() {
 		
@@ -106,7 +109,7 @@ public class Commit{
 		this.id = id;
 	}
 
-	public long getRevision() {
+	public Long getRevision() {
 		return revision;
 	}
 	
@@ -140,6 +143,7 @@ public class Commit{
 	
 	public void setVcsMiningProject(final VCSMiningProject project) {
 		this.vcsMiningProject = project;
+		project.addCommit(this);
 	}
 
 	public void setComment(final String comment) {
@@ -203,9 +207,22 @@ public class Commit{
 		entryFolders.addAll(folders);
 	}
 	
+	public String getRelativeURL() {
+		return relativeURL;
+	}
+
+	public void setRelativeURL(String relativeURL) {
+		this.relativeURL = relativeURL;
+	}
+	
 
 	public String toString(){
 		return "Commit " + revision;
+	}
+
+	@Override
+	public int compareTo(Commit otherCommit) {
+		return this.getRevision().compareTo(otherCommit.getRevision());
 	}
 
 }

@@ -46,9 +46,9 @@ import br.usp.ime.lapessc.xflow2.exception.persistence.AccessDeniedException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.UnableToReachDatabaseException;
 
-public abstract class BaseDAO<Entity> {
+public abstract class BaseDAO<T> {
 
-	protected boolean insert(final Entity entity) throws DatabaseException {
+	protected boolean insert(final T entity) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 
 		try {
@@ -71,7 +71,7 @@ public abstract class BaseDAO<Entity> {
 		return true;
 	}
 
-	protected boolean remove(final Entity entity) throws DatabaseException {
+	protected boolean remove(final T entity) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 
 		try {
@@ -79,12 +79,13 @@ public abstract class BaseDAO<Entity> {
 			manager.remove(entity);
 			manager.getTransaction().commit();
 		} catch (javax.persistence.PersistenceException e){
-			if(e.getCause().getCause().getMessage().equalsIgnoreCase("Unknown database")){
-				throw new UnableToReachDatabaseException(e.getCause().getCause().getMessage());
+			e.printStackTrace();
+			if(e.getCause().getMessage().equalsIgnoreCase("Unknown database")){
+				throw new UnableToReachDatabaseException(e.getCause().getMessage());
 			}
 			
-			if(e.getCause().getCause().getMessage().contains("Access denied for user")){
-				throw new AccessDeniedException(e.getCause().getCause().getMessage());
+			if(e.getCause().getMessage().contains("Access denied for user")){
+				throw new AccessDeniedException(e.getCause().getMessage());
 			}
 
 			return false;
@@ -93,7 +94,7 @@ public abstract class BaseDAO<Entity> {
 		return true;
 	}
 
-	protected boolean update(final Entity entity) throws DatabaseException {
+	protected boolean update(final T entity) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 
 		try {
@@ -114,7 +115,7 @@ public abstract class BaseDAO<Entity> {
 		return true;
 	}
 
-	protected Entity findById(final Class<Entity> clazz, final long id) throws DatabaseException {
+	protected T findById(final Class<T> clazz, final long id) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 		try {
 			return manager.find(clazz, id);
@@ -133,7 +134,7 @@ public abstract class BaseDAO<Entity> {
 		}
 	}
 	
-	protected Entity findUnique(final Class<Entity> clazz, final String query, final Object[] ... parameters) throws DatabaseException {
+	protected T findUnique(final Class<T> clazz, final String query, final Object[] ... parameters) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 		
 		final Query q = manager.createQuery(query);
@@ -141,7 +142,7 @@ public abstract class BaseDAO<Entity> {
 			q.setParameter(parameter[0].toString(), parameter[1]);
 		}
 		try {
-			return (Entity) q.getSingleResult();
+			return (T) q.getSingleResult();
 		} catch (NoResultException e){
 			return null;
 		} catch (javax.persistence.PersistenceException e){
@@ -181,7 +182,7 @@ public abstract class BaseDAO<Entity> {
 		return null;
 	}
 	
-	protected Collection<Entity> findByQuery(final Class<Entity> clazz, final String query, final Object[] ... parameters) throws DatabaseException {
+	protected Collection<T> findByQuery(final Class<T> clazz, final String query, final Object[] ... parameters) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 		
 		final Query q = manager.createQuery(query);
@@ -190,7 +191,7 @@ public abstract class BaseDAO<Entity> {
 		}
 		
 		try {
-			Collection<Entity> queryResults = q.getResultList();
+			Collection<T> queryResults = q.getResultList();
 			return queryResults;
 		} catch (NoResultException e){
 			return null;
@@ -235,14 +236,14 @@ public abstract class BaseDAO<Entity> {
 	}
 
 
-	protected Collection<Entity> findAll(final Class<? extends Entity> myClass) throws DatabaseException {
+	protected Collection<T> findAll(final Class<? extends T> myClass) throws DatabaseException {
 		final EntityManager manager = DatabaseManager.getDatabaseSession();
 		
 		try{
 			final StringBuilder builder = new StringBuilder("select a from ");
 			builder.append(myClass.getName());
 			builder.append(" a");
-			Collection<Entity> all = new ArrayList<Entity>(manager.createQuery(builder.toString()).getResultList());
+			Collection<T> all = new ArrayList<T>(manager.createQuery(builder.toString()).getResultList());
 			return all;
 		}catch (NoResultException e) {
 			return null;

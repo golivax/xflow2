@@ -55,39 +55,6 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 	}
 
 	@Override
-	public int checkDependencyStamp(final FileDependencyObject dependedObj) throws DatabaseException {
-		if(dependedObj.getFile().getOperationType() == 'A'){
-			final String query = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObjectType.FILE_DEPENDENCY.getValue();
-			final Object[] parameter1 = new Object[]{"analysis", dependedObj.getAnalysis()};
-
-			return getIntegerValueByQuery(query, parameter1) + 1;
-		}
-		else{
-			final String query = "SELECT filedep from file_dependency filedep where filedep.id = "+
-			"(select max(filedep.id) from file_dependency filedep where filedep.analysis = :analysis and filedep.filePath = :path)";
-			final Object[] parameter1 = new Object[]{"analysis", dependedObj.getAnalysis()};
-			final Object[] parameter2 = new Object[]{"path", dependedObj.getFile().getPath()};
-			
-			final FileDependencyObject filedep = findUnique(FileDependencyObject.class, query, parameter1, parameter2);
-			if(filedep != null){
-				return filedep.getAssignedStamp();
-			}
-			else{
-				final String subquery = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
-				return getIntegerValueByQuery(subquery, parameter1) + 1;
-			}
-		}
-	}
-	
-	@Override
-	public int checkHighestStamp(Analysis analysis) throws DatabaseException {
-		final String query = "SELECT MAX(objdep.assignedStamp) from dependency_object objdep where objdep.analysis = :analysis and objdep.objectType = "+DependencyObjectType.AUTHOR_DEPENDENCY.getValue();
-		final Object[] parameter1 = new Object[]{"analysis", analysis};
-		
-		return getIntegerValueByQuery(query, parameter1);
-	}
-
-	@Override
 	public List<FileDependencyObject> findAllDependencyObjsUntilDependency(final DependencyGraph dependency) throws DatabaseException {
 		if(dependency.isDirectedDependency()){
 			final String query = "SELECT dep from file_dependency dep, dependency d where dep.analysis = :analysis and d.id <= :dependencyID and d.type = :type and d in elements(dep.dependencies)";
@@ -181,5 +148,18 @@ public class FileDependencyObjectDAO extends DependencyObjectDAO<FileDependencyO
 		return (List<FileDependencyObject>) findByQuery(
 				FileDependencyObject.class, query, parameter1, parameter2, 
 				parameter3, parameter4);
+	}
+	
+	public List<FileDependencyObject> findAllByAnalysis(Analysis analysis) throws DatabaseException{
+		final String query = "SELECT file_dep_obj from file_dependency as file_dep_obj where "
+				+ "file_dep_obj.analysis.id = :analysisID";
+		
+		final Object[] parameter1 = new Object[]{"analysisID", analysis.getId()};
+		
+		final List<FileDependencyObject> dependencyObjects = 
+				(List<FileDependencyObject>) findByQuery(
+						FileDependencyObject.class, query, parameter1);
+		
+		return dependencyObjects;		
 	}
 }

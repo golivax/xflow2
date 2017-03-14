@@ -36,12 +36,16 @@ package br.usp.ime.lapessc.xflow2.repository.vcs.parser;
 import java.util.Date;
 import java.util.List;
 
+import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.exception.cm.CMException;
 
 public interface VCSLogParser {
+	
+	public MiningSettings getSettings();
 
-	public List<CommitDTO> parse(long startRevision, 
-			long endRevision) throws CMException;
+	public List<CommitDTO> parse() throws CMException;
+	
+	public List<CommitDTO> parse(long startCommit, long endCommit) throws CMException;
 
 	public List<CommitDTO> parse(Date startDate, Date endDate) 
 			throws CMException;

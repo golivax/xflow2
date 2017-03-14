@@ -35,7 +35,6 @@ package br.usp.ime.lapessc.xflow2.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -44,8 +43,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
-
-import org.hibernate.annotations.Index;
 
 @MappedSuperclass
 public abstract class Resource implements Serializable {
@@ -68,15 +65,24 @@ public abstract class Resource implements Serializable {
 	@JoinColumn(name = "DELETED_ON")
 	private Commit deletedOn = null;
 	
-	@Index(name = "file_operation_index")
 	@Column(name = "FILE_OPERATION", nullable = false)
 	private char operationType;
 	
-	@Index(name = "file_path_index")
 	@Column(name = "PATH", nullable = false, 
-	columnDefinition = "VARCHAR(350) COLLATE latin1_general_cs")
+	columnDefinition = "VARCHAR(255)")
 	private String path;
 	
+	@ManyToOne(optional = true)
+	private Branch branch;
+	
+	public Branch getBranch() {
+		return branch;
+	}
+
+	public void setBranch(Branch branch) {
+		this.branch = branch;
+	}
+
 	public Resource() {
 	}
 	

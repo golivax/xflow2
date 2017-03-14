@@ -40,10 +40,14 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Type;
+
 @Embeddable
 public class Filter {
 	
+	//A regex can get pretty big, so that's why its mapping is set to 'text'
 	@Column(name = "FILTER")
+	@Type(type="text")
 	private String regex;
 	
 	@Transient
@@ -53,8 +57,8 @@ public class Filter {
 		
 	}
 	
-	public Filter(String parameter){
-		this.regex = parameter;
+	public Filter(String regex){
+		this.regex = regex;
 		this.pattern = Pattern.compile(regex);		
 	}
 	
@@ -68,13 +72,20 @@ public class Filter {
 	}
 	
 	public static void main(String args[]){
-		//Filter filter = new Filter(".*?(\\.).*?");
+		//Filter filter = new Filter(".*?(//.).*?");
 		//System.out.println(filter.match("/app/CHANGE.java"));
 		
+		/**
 		Filter f = new Filter(".*?\\.java");
+		
 		System.out.println(
 				f.match("/ant/core/trunk/src/main/org/apache/tools/ant/" +
 						"taskdefs/optional/net/SetProxy.java"));
+		*/
+		
+		Filter f = new Filter("/trunk/src/argouml-app/src/.*?\\.java|/trunk/src/argouml-core-diagrams-activity2/src/.*?\\.java|/trunk/src/argouml-core-diagrams-class2/src/.*?\\.java|/trunk/src/argouml-core-diagrams-sequence2/src/.*?\\.java|/trunk/src/argouml-core-diagrams-structure2/src/.*?\\.java|/trunk/src/argouml-core-diagrams-uml2/src/.*?\\.java|/trunk/src/argouml-core-model/src/.*?\\.java|/trunk/src/argouml-core-model-euml/src/.*?\\.java|/trunk/src/argouml-core-model-mdr/src/.*?\\.java|/trunk/src/argouml-core-umlpropertypanels/src/.*?\\.java");
+		System.out.println(f.match("/trunk/src/argouml-app/src/org/bla/Fulano.java"));
+
 	}
 	
 }

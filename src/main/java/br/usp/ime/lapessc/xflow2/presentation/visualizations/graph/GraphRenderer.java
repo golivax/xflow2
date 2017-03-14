@@ -24,6 +24,8 @@ import prefuse.controls.NeighborHighlightControl;
 import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
+import prefuse.data.Edge;
+import prefuse.data.Node;
 import prefuse.data.Tuple;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
@@ -33,25 +35,23 @@ import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
 import prefuse.visual.VisualItem;
-import br.usp.ime.lapessc.xflow2.entity.Analysis;
+import br.usp.ime.lapessc.xflow2.core.processors.coordreq.CoordReqsAnalysis;
+import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirementsGraph;
+import br.usp.ime.lapessc.xflow2.entity.CoordinationRequirementsMatrix;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
+import br.usp.ime.lapessc.xflow2.entity.RawDependency;
+import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.representation.Converter;
-import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGEdge;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
-import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGVertex;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
+import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.entity.representation.prefuse.PrefuseGraph;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.presentation.visualizations.VisualizationRenderer;
 import br.usp.ime.lapessc.xflow2.repository.vcs.dao.CommitDAO;
-import edu.uci.ics.jung.algorithms.scoring.EigenvectorCentrality;
 
 @SuppressWarnings("unchecked")
 public class GraphRenderer implements VisualizationRenderer<GraphVisualization> {
@@ -72,102 +72,47 @@ public class GraphRenderer implements VisualizationRenderer<GraphVisualization> 
 	}
 	
 	private void constructGraph() throws DatabaseException {
-		if(metricsSession.getAssociatedAnalysis().isCoordinationRequirementPersisted()){
-			//FIXME
-			//this.graph = Converter.convertJungToPrefuseGraph(
-			//		metricsSession.getAssociatedAnalysis().processEntryDependencyGraph(
-			//				new CommitDAO().findById(Commit.class, 2127L), 
-			//				DependencyGraph.COORD_REQUIREMENTS));
-		} else {
-			
-			Analysis analysis = metricsSession.getAssociatedAnalysis();
-			
-			//Latest commit with files
-			CommitDAO commitDAO = new CommitDAO();
-			Commit commit = commitDAO.getLatestCommitWithFiles(analysis);
-			
-			System.out.println("Commit: " + commit.getRevision());
-			
-			final DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> dependencyDTO = 
-					new CoordinationRequirementsGraph();
-						
-			dependencyDTO.setAssociatedAnalysis(analysis);
-			dependencyDTO.setAssociatedEntry(commit);
-			
-			final Matrix taskAssignmentMatrix = 
-					analysis.getDependencyMatrixForEntry(
-							commit,DependencyGraphType.TASK_ASSIGNMENT.getValue());
-			
-			System.out.println(taskAssignmentMatrix.getRows() + ", " + 
-					taskAssignmentMatrix.getColumns());
-			
-			final Matrix taskDependencyMatrix = 
-					analysis.getDependencyMatrixForEntry(
-							commit,DependencyGraphType.TASK_DEPENDENCY.getValue());
-			
-			System.out.println(taskDependencyMatrix.getRows() + ", " + 
-					taskDependencyMatrix.getColumns());
-			
-			//Remove deps lógicas com supp = 1
-			//System.out.println("Applying filter to taskDependencyMatrix");
-			//taskDependencyMatrix.applyStatisticalFilters(2, 0);
-			
-			final Matrix matrix = taskAssignmentMatrix.multiply(
-					taskDependencyMatrix).multiply(
-							taskAssignmentMatrix.getTransposeMatrix());
-			
-			//Transforma a matriz em binária
-			for (int i = 0; i < matrix.getRows(); i++){
-				for (int j = 0; j < matrix.getColumns(); j++){
-					if (matrix.getValueAt(i,j) > 0){
-						matrix.putValueAt(1, i, j);
-					}
-				}
-			}
-			
-			//Printa a matriz
-			for (int i = 0; i < matrix.getRows(); i++){
-				for (int j = 0; j < matrix.getColumns(); j++){
-					System.out.print(matrix.getValueAt(i, j));
-					System.out.print(" ");
-				}
-				System.out.println();
-			}
-			
-			
-			final AuthorDependencyObjectDAO fileDependencyDAO = 
-					new AuthorDependencyObjectDAO();
 
-			//Printa a matriz
-			for (int i = 0; i < matrix.getRows(); i++){
-				final AuthorDependencyObject dependedEntity = 
-						fileDependencyDAO.findDependencyObjectByStamp(
-								metricsSession.getAssociatedAnalysis(), i);
-				
-				System.out.println("Line " + i + ": " + 
-						dependedEntity.getAuthor().getName());
-			}
-			
-			//Calcula centralidades
-			JUNGGraph graph = new JUNGGraph();
-			graph = JUNGGraph.convertMatrixToJUNGGraph(matrix, dependencyDTO);
-			
-			EigenvectorCentrality<JUNGVertex, JUNGEdge> egvc = 
-					new EigenvectorCentrality<JUNGVertex, JUNGEdge>(
-							graph.getGraph());
-			
-			egvc.evaluate();
-	
-			for(JUNGVertex v : graph.getGraph().getVertices()){
-				System.out.println(v.getName());
-				System.out.println("Degree: " + graph.getGraph().degree(v));
-				System.out.println("EGVC: " + egvc.getVertexScore(v));
-			}
-			
-			this.graph = Converter.convertJungToPrefuseGraph(graph);
-			applyLabelMask();
-		}
+		CoordReqsAnalysis coordReqAnalysis = 
+				(CoordReqsAnalysis) metricsSession.getAssociatedAnalysis();
+		
+		CoordinationRequirementsMatrix coordReqMatrix = 
+				coordReqAnalysis.getCoordinationReqsMatrix();
+		
+		this.graph = getPrefuseGraph(coordReqMatrix);
+		
+		//FIXME Dirty!
+		//applyLabelMask();
+
 		this.currentRevision = metricsSession.getAssociatedAnalysis().getLastEntry().getRevision();
+	}
+
+	private PrefuseGraph getPrefuseGraph(
+			CoordinationRequirementsMatrix coordReqMatrix) {
+		
+		Map<Author,Node> authorNodeMap = new HashMap<>();
+		PrefuseGraph prefuseGraph = new PrefuseGraph();
+		
+		for(Author author : coordReqMatrix.getAuthors()){
+			
+			Node node = prefuseGraph.createNode(
+					author.getId(),author.getName());
+			
+			authorNodeMap.put(author, node);
+		}
+		
+		for(RawDependency<Author,Author,Integer> pairWiseCoordReq : 
+				coordReqMatrix.getPairwiseCoordReqs()){
+			
+			
+			Edge prefuseEdge = prefuseGraph.addEdge(
+					authorNodeMap.get(pairWiseCoordReq.getClient()), 
+					authorNodeMap.get(pairWiseCoordReq.getSupplier()));
+			
+			prefuseEdge.setLong("weight", pairWiseCoordReq.getLabel());
+		}
+		
+		return prefuseGraph;		
 	}
 
 	private void applyLabelMask() {
@@ -428,13 +373,17 @@ public class GraphRenderer implements VisualizationRenderer<GraphVisualization> 
 
 		if(representedDependency == DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()){
 			if(this.metricsSession.getAssociatedAnalysis().isCoordinationRequirementPersisted()){
-				this.graph = Converter.convertJungToPrefuseGraph(metricsSession.getAssociatedAnalysis().processEntryDependencyGraph(entry, DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()));
+				//FIXME:
+				//this.graph = Converter.convertJungToPrefuseGraph(metricsSession.getAssociatedAnalysis().processEntryDependencyGraph(entry, DependencyGraphType.COORDINATION_REQUIREMENTS.getValue()));
+				
 			} else {
-				final DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> dependencyDTO = new DependencyDAO().findDependencyByEntry(metricsSession.getAssociatedAnalysis().getId(), entry.getId(), DependencyGraphType.COORDINATION_REQUIREMENTS.getValue());
-				final Matrix taskAssignmentMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraphType.TASK_ASSIGNMENT.getValue());
-				final Matrix taskDependencyMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraphType.TASK_DEPENDENCY.getValue());
-				final Matrix matrix = taskAssignmentMatrix.multiply(taskDependencyMatrix).multiply(taskAssignmentMatrix.getTransposeMatrix());
-
+				final DependencyGraph<AuthorDependencyObject, AuthorDependencyObject> dependencyDTO = new DependencyGraphDAO().findDependencyByEntry(metricsSession.getAssociatedAnalysis().getId(), entry.getId(), DependencyGraphType.COORDINATION_REQUIREMENTS.getValue());
+				//FIXME
+				//final Matrix taskAssignmentMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraphType.TASK_ASSIGNMENT.getValue());
+				//final Matrix taskDependencyMatrix = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, DependencyGraphType.TASK_DEPENDENCY.getValue());
+				//final Matrix matrix = taskAssignmentMatrix.multiply(taskDependencyMatrix).multiply(taskAssignmentMatrix.getTransposeMatrix());
+				IRealMatrix matrix = null;
+				
 				this.graph = Converter.convertJungToPrefuseGraph(JUNGGraph.convertMatrixToJUNGGraph(matrix, dependencyDTO));
 			}
 		} else {
@@ -450,9 +399,13 @@ public class GraphRenderer implements VisualizationRenderer<GraphVisualization> 
 //			graph = JUNGGraph.convertMatrixToJUNGGraph(matrix, dependencyDTO);
 //			this.graph = Converter.convertJungToPrefuseGrapha(graph);
 			
-			final DependencyGraph dependency = new DependencyDAO().findHighestDependencyByEntry(this.metricsSession.getAssociatedAnalysis().getId(), entry.getId(), representedDependency);
+			final DependencyGraph dependency = new DependencyGraphDAO().findHighestDependencyByEntry(this.metricsSession.getAssociatedAnalysis().getId(), entry.getId(), representedDependency);
 			JUNGGraph graph = new JUNGGraph();
-			final Matrix m = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, dependency.getType());
+			
+			//FIXME
+			//final Matrix m = this.metricsSession.getAssociatedAnalysis().getDependencyMatrixForEntry(entry, dependency.getType());
+			IRealMatrix m = null;
+			
 			System.out.println(m.getColumns());
 			graph = JUNGGraph.convertMatrixToJUNGGraph(m, dependency);
 			System.out.println(graph.getGraph());

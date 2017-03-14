@@ -34,10 +34,15 @@
 package br.usp.ime.lapessc.xflow2.entity;
 
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity(name = "folder")
+@Table(indexes = {
+		@Index(name="file_operation_index", columnList="FILE_OPERATION"),
+		@Index(name="file_path_index", columnList="PATH")})
 public class Folder extends Resource implements Comparable<Folder>{
 
 	private static final long serialVersionUID = 8302324702620512851L;

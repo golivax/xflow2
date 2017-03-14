@@ -37,11 +37,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.tmatesoft.svn.core.ISVNLogEntryHandler;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNLogEntryPath;
 import org.tmatesoft.svn.core.SVNNodeKind;
+import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNLogClient;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.exception.cm.CMException;
@@ -62,81 +67,77 @@ public class SVNLogParser implements VCSLogParser {
 			throws SVNProtocolNotSupportedException{
 		
 		this.miningSettings = miningSettings;		
-		
-		this.svn = SVNFactory.create(miningSettings.getVcs().getURI(), 
-				miningSettings.getAccessCredentials().getUsername(), 
-				miningSettings.getAccessCredentials().getPassword());
-		
 		this.parserUtils = new SVNLogParserUtils(svn);
 	}
 
-	public List<CommitDTO> parse(long startCommit, long endCommit) {
-			
-		List<CommitDTO> commits = new ArrayList<CommitDTO>();
+	public List<CommitDTO> parse() throws CMException{
+		return parse(miningSettings.getFirstRev(), miningSettings.getLastRev());		
+	}
+	
+	@Override
+	public List<CommitDTO> parse(long startCommit, long endCommit)
+			throws CMException {
+		
+
+		SVNLogEntryHandler logEntryHandler = new SVNLogEntryHandler();
 		
 		try{	
-			List<SVNLogEntry> logEntries;
-			
+		
 			if(miningSettings.isTemporalConsistencyForced()){
-				logEntries = parserUtils.getOrderedLogEntries(
-						svn, startCommit, endCommit);
+				
+				List<SVNLogEntry> logEntries = parserUtils.getOrderedLogEntries(
+						svn, miningSettings.getFirstRev(), 
+						miningSettings.getLastRev());
+				
+				logEntryHandler.handleLogEntries(logEntries);
 			}
 			else {
-				logEntries = (List<SVNLogEntry>) svn.log(new String[]{""}, 
-					null, startCommit, endCommit, true, true);
-			}
-	
-			for (SVNLogEntry logEntry : logEntries) {
 				
-				System.out.print("Parsing commit " + 
-						logEntry.getRevision() + "\n");
-	
-				CommitDTO commit = new CommitDTO();
-				setRevision(logEntry, commit);
+				//FIXME: Should use AccessCredentials 
 				
-				//Parsing the Artifacts	
-				for (SVNLogEntryPath entryPath : 
-						logEntry.getChangedPaths().values()) {
-
-					SVNNodeKind nodeKind = entryPath.getKind();
-					
-					//Sometimes SVNKit is not able to retrieve the node kind, so
-					//we must ask it explicitly
-					if (nodeKind.equals(SVNNodeKind.UNKNOWN)){
-						nodeKind = svn.checkPath(entryPath.getPath(), logEntry.getRevision());
-					}
-										
-					if (nodeKind.equals(SVNNodeKind.DIR)) setFolder(entryPath, commit);
-					else if (nodeKind.equals(SVNNodeKind.FILE)) setFile(entryPath, commit); 
-				}
-
-				//If the commit has no artifacts, then we discard it
-				if(commit.getFileArtifacts().isEmpty() && 
-				   commit.getFolderArtifacts().isEmpty()){
-					
-					System.out.println("Commit does not match data filter");
-					System.out.println("Ignoring this commit");
-				}
-				//Otherwise, we parse the rest of the data
-				else{
-					setAuthor(logEntry, commit);
-					setDate(logEntry, commit);
-					setComment(logEntry, commit);
-					
-					commits.add(commit);
-				}
+				SVNClientManager manager = SVNClientManager.newInstance(); 
+				SVNLogClient logClient = manager.getLogClient();
+				
+			    SVNURL url = SVNURL.parseURIEncoded(
+			    		miningSettings.getVcs().getURI());
+			    
+				String[] paths = miningSettings.getPaths().toArray(
+						new String[0]);
+				
+				SVNRevision pegRev = miningSettings.getPegRev() != null ?
+						SVNRevision.create(miningSettings.getPegRev()) :
+						SVNRevision.UNDEFINED;
+				
+				//Defaults to peg if SVNRevision.UNDEFINED is provided
+	            SVNRevision startRevision = SVNRevision.create(startCommit);
+	            
+	            //Defaults to 0 if SVNRevision.UNDEFINED is provided
+	            SVNRevision endRevision = SVNRevision.create(endCommit);
+	            
+	            boolean stopOnCopy = false;
+	            boolean includePaths = true;
+	            boolean includeMergeInfo = false;
+	            	            
+	            long limit = -1;  // no limit
+			    
+	            String[] revProperties = null;
+	            
+			    logClient.doLog(
+			    		url, paths, pegRev, startRevision, endRevision, 
+			    		stopOnCopy, includePaths, includeMergeInfo, limit,
+			    		revProperties, logEntryHandler);
+				
 			}
+
 		}catch(SVNException e){
 			e.printStackTrace();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		finally{
-			svn.closeSession();	
-		}
 		
-		return commits;
+		return logEntryHandler.getCommits();
 	}
+
 
 	private void setRevision(SVNLogEntry logEntry, CommitDTO commit) {
 		commit.setRevision(logEntry.getRevision());
@@ -247,5 +248,76 @@ public class SVNLogParser implements VCSLogParser {
 		return null;
 	}
 
+	@Override
+	public MiningSettings getSettings() {
+		return miningSettings;
+	}
+
+	
+	class SVNLogEntryHandler implements ISVNLogEntryHandler{
+
+		private List<CommitDTO> commits = new ArrayList<>();
+		
+		public void handleLogEntries(List<SVNLogEntry> svnLogEntries) throws SVNException{
+			for(SVNLogEntry svnLogEntry : svnLogEntries){
+				handleLogEntry(svnLogEntry);
+			}
+		}
+		
+		@Override
+		public void handleLogEntry(SVNLogEntry logEntry) throws SVNException {
+						
+			//TODO: Extract relative-url (maybe it's in the logEntry.getRevisionProperties())
+			
+			System.out.print("Parsing commit " + 
+					logEntry.getRevision() + "\n");
+
+			CommitDTO commit = new CommitDTO();
+			setRevision(logEntry, commit);
+			
+			//Parsing the Artifacts	
+			for (SVNLogEntryPath entryPath : 
+					logEntry.getChangedPaths().values()) {
+
+				SVNNodeKind nodeKind = entryPath.getKind();
+				
+				//Sometimes SVNKit is not able to retrieve the node kind, so
+				//we must ask it explicitly
+				if (nodeKind.equals(SVNNodeKind.UNKNOWN)){
+					nodeKind = svn.checkPath(
+							entryPath.getPath(), logEntry.getRevision());
+				}
+									
+				if (nodeKind.equals(SVNNodeKind.DIR)) {
+					setFolder(entryPath, commit);
+				}
+				else if (nodeKind.equals(SVNNodeKind.FILE)){
+					setFile(entryPath, commit); 
+				}
+			}
+
+			//If the commit has no artifacts, then we discard it
+			if(commit.getFileArtifacts().isEmpty() && 
+			   commit.getFolderArtifacts().isEmpty()){
+				
+				System.out.println("Commit does not match data filter");
+				System.out.println("Ignoring this commit");
+			}
+			//Otherwise, we parse the rest of the data
+			else{
+				setAuthor(logEntry, commit);
+				setDate(logEntry, commit);
+				setComment(logEntry, commit);
+				
+				commits.add(commit);
+			}
+        	
+        }
+		
+		public List<CommitDTO> getCommits(){
+			return commits;
+		}
+		
+	}
 
 }

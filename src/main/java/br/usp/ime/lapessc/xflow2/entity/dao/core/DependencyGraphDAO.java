@@ -3,14 +3,12 @@ package br.usp.ime.lapessc.xflow2.entity.dao.core;
 import java.util.Collection;
 import java.util.List;
 
-import br.usp.ime.lapessc.xflow2.entity.AuthorDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
-import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
-public class DependencyDAO extends BaseDAO<DependencyGraph> {
+public class DependencyGraphDAO extends BaseDAO<DependencyGraph> {
 
 	@Override
 	public boolean insert(final DependencyGraph entity) throws DatabaseException {
@@ -48,7 +46,7 @@ public class DependencyDAO extends BaseDAO<DependencyGraph> {
 	}
 	
 	//FIXME: Polymorphic query
-	public Collection findAllDependenciesByAnalysis(final long analysisID, final DependencyGraphType dependencyGraphType) throws DatabaseException {
+	public Collection findAllDependenciesByAnalysisAndType(final long analysisID, final DependencyGraphType dependencyGraphType) throws DatabaseException {
 		final String query = "SELECT dep from dependency dep " +
 				"join dep.associatedEntry as entry where " +
 				"dep.associatedAnalysis.id = :analysisID " +

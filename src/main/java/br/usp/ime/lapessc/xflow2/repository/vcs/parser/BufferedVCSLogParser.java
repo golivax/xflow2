@@ -6,33 +6,32 @@ import br.usp.ime.lapessc.xflow2.exception.cm.CMException;
 
 public class BufferedVCSLogParser{
 
-	private int BUFFER_SIZE = 1000;
+	private int BUFFER_SIZE = 5000;
 	private int INVOCATIONS_COUNT = 0;
 	private long REMAINING_COMMITS;
 	
 	private VCSLogParser vcsLogParser;
-	private long startCommit;
-	private long endCommit;
 	
-	public BufferedVCSLogParser(VCSLogParser vcsLogParser, long startCommit, 
-			long endCommit){
+	public BufferedVCSLogParser(VCSLogParser vcsLogParser){
 		
-		this.vcsLogParser = vcsLogParser;
-		this.startCommit = startCommit;
-		this.endCommit= endCommit;
+		this.vcsLogParser = vcsLogParser;	
 		
-		this.REMAINING_COMMITS = endCommit - startCommit + 1;
+		this.REMAINING_COMMITS = 
+				vcsLogParser.getSettings().getLastRev() - 
+				vcsLogParser.getSettings().getFirstRev() + 1;
 	}
 	
-	public BufferedVCSLogParser(VCSLogParser vcsLogParser, long startCommit, 
-			long endCommit, int buffersize){
+	public BufferedVCSLogParser(VCSLogParser vcsLogParser, int buffersize){
 		
-		this(vcsLogParser, startCommit, endCommit);
+		this(vcsLogParser);
 		this.BUFFER_SIZE = buffersize; 
 	}
 	
 	//Move this to data extractor
 	public List<CommitDTO> parse() throws CMException {
+		
+		long startCommit = vcsLogParser.getSettings().getFirstRev();
+		long endCommit = vcsLogParser.getSettings().getLastRev();
 		
 		long i = startCommit + (INVOCATIONS_COUNT * BUFFER_SIZE);
 		long j = i + BUFFER_SIZE - 1;

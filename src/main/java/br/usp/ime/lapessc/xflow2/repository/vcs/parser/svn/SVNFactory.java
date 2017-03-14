@@ -35,7 +35,7 @@ public class SVNFactory {
 			
 			ISVNAuthenticationManager authManager = 
 					SVNWCUtil.createDefaultAuthenticationManager(username, 
-							password);
+							password.toCharArray());
 		
 			repository.setAuthenticationManager(authManager);
 			

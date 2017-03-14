@@ -24,5 +24,3 @@ Worker w3    x        x  --> new DependencySet (w3, dependenciesMap [A,1][D,1])
 rawDependency: [client = filedependencyobject, supplier = authordependencyobject, label = commit]
 
 --------------------------------------------------------------------------------
-
-

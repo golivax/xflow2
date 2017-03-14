@@ -52,10 +52,6 @@ public abstract class DependencyObjectDAO<Subtype extends DependencyObject> exte
 		return super.getIntegerValueByQuery(query, parameters);
 	}
 
-	public abstract int checkDependencyStamp(Subtype dependedObj) throws DatabaseException;
-	
-	public abstract int checkHighestStamp(Analysis analysis) throws DatabaseException;
-	
 	public abstract List<Subtype> findDependencyObjsByDependency(DependencyGraph dependency) throws DatabaseException;
 	
 	public abstract List<Subtype> findAllDependencyObjsUntilDependency(DependencyGraph dependency) throws DatabaseException;

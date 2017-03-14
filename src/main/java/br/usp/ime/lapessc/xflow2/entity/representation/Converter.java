@@ -15,7 +15,7 @@ import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGEdge;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGVertex;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
+import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.entity.representation.prefuse.PrefuseGraph;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import edu.uci.ics.jung.graph.AbstractTypedGraph;
@@ -24,6 +24,7 @@ import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 
 public final class Converter {
 	
+	/**
 	public static void convertDependenciesToLargeMatrix(Matrix resultMatrix, List<Long> dependencySetsIds, boolean isDependencyDirected) {
 		
 		try{
@@ -61,18 +62,24 @@ public final class Converter {
 		}
 				
 	}
-
+	*/
 		
 	/*
 	 * LIST<DependencyObject> TO MATRIX
 	 */
+	
+	/**
+	//Cria a matriz com base na caralhada de dependency sets
+	//IMPORTANTE: Os stamps sao usados pra indexar as linhas e colunas
 	public static void convertDependenciesToMatrix(Matrix resultMatrix, List<DependencySet> dependencySets, boolean isDependencyDirected) {
 
+		
+		
 		if(isDependencyDirected){
 			for (DependencySet dependencySet : dependencySets) {
 				
 				DependencyObject supplier = dependencySet.getSupplier();
-				int supplierStamp = supplier.getAssignedStamp();
+				int supplierStamp = supplier.getId().intValue();
 				
 				if(supplierStamp > (resultMatrix.getRows() - 1)){
 					resultMatrix.incrementMatrixRowsTo(supplierStamp + 1);
@@ -82,7 +89,7 @@ public final class Converter {
 
 				for (DependencyObject client : clients) {
 					
-					int clientStamp = client.getAssignedStamp();
+					int clientStamp = client.getId().intValue();
 					
 					if(clientStamp > (resultMatrix.getColumns() - 1)){
 						resultMatrix.incrementMatrixColumnsTo(clientStamp + 1);
@@ -133,7 +140,8 @@ public final class Converter {
 			}
 		}	
 	}
-
+	*/	
+	
 	public static final JUNGGraph convertDependenciesToJUNGGraph(final List<? extends DependencyObject> dependencies, final boolean isDirected) throws DatabaseException {
 
 		final AbstractTypedGraph<JUNGVertex,JUNGEdge> graph;
@@ -193,7 +201,7 @@ public final class Converter {
 					nodeList.put(v2.getId(), n2);
 				}
 
-				final Edge prefuseEdge = prefuseGraph.getPrefuseGraph().addEdge(n1, n2);
+				final Edge prefuseEdge = prefuseGraph.addEdge(n1, n2);
 				prefuseEdge.setLong("weight", edge.getWeight());
 
 			}

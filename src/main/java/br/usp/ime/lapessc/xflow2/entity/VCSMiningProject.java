@@ -12,8 +12,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
-@Entity(name = "project")
+@Entity(name = "vcs_mining_prj")
 public class VCSMiningProject {
 
 	@Id
@@ -25,20 +26,29 @@ public class VCSMiningProject {
 	private MiningSettings miningSettings;
 	
 	@OneToMany(mappedBy = "vcsMiningProject", cascade = CascadeType.ALL)
+	@OrderBy("revision")
 	private List<Commit> commits = new ArrayList<Commit>();
 	
 	@OneToMany(mappedBy = "vcsMiningProject", cascade = CascadeType.ALL)
 	private List<Author> authors = new ArrayList<Author>();
 	
-	public VCSMiningProject(){
-		
-	}
+	@OneToMany(mappedBy = "project")
+	private List<Analysis> analyses = new ArrayList<Analysis>();
+	
+	@ManyToOne
+	private Study study;
+	
+	//For JPA use only
+	public VCSMiningProject(){}
 	
 	public MiningSettings getMiningSettings() {
 		return miningSettings;
 	}
 	
-	public VCSMiningProject(MiningSettings miningSettings){
+	public VCSMiningProject(Study study, MiningSettings miningSettings){
+		this.study = study;
+		study.addVcsMiningProject(this);
+		
 		this.miningSettings = miningSettings;
 	}
 	
@@ -72,6 +82,10 @@ public class VCSMiningProject {
 	
 	public void setAuthors(List<Author> authors){
 		this.authors = authors;
+	}
+
+	public List<Analysis> getAnalyses() {
+		return analyses;
 	}
 
 	public long getId() {

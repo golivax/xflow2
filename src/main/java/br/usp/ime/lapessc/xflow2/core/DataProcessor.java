@@ -48,23 +48,22 @@ import br.usp.ime.lapessc.xflow2.util.Filter;
 
 public final class DataProcessor {
 
-	public static final void processEntries(final Analysis analysis, 
+	public static final void processCommits(final Analysis analysis, 
 			final Filter filter) throws DatabaseException{
 		
 		CommitDAO entryDAO = new CommitDAO();
 		
 		//TODO: Replace conditional with Polymorphism
-		DependenciesIdentifier context = null;
+		DependenciesIdentifier depIdentifier = null;
 		
 		if (analysis.getType() == AnalysisType.COCHANGES_ANALYSIS.getValue()){
-			context = new CoChangesCollector();
+			depIdentifier = new CoChangesCollector();
 		}
 		else if(analysis.getType() == AnalysisType.CALLGRAPH_ANALYSIS.getValue()){
-			context = new CallGraphCollector();
+			depIdentifier = new CallGraphCollector();
 		}
 		
 		final List<Long> revisions;
-
 
 		if(analysis.isTemporalConsistencyForced()){
 			//Retrieving all entries is crazy, so we just look for revision numbers
@@ -82,7 +81,7 @@ public final class DataProcessor {
 					analysis.getMaxFilesPerRevision());
 		}
 		 
-		context.dataCollect(revisions, analysis, filter);
+		depIdentifier.identifyDependencies(revisions, analysis, filter);
 	}
 	
 	public static final void resumeProcess(final Analysis analysis, final long finalRevision, final Filter filter, final String details) throws DatabaseException{
@@ -105,7 +104,7 @@ public final class DataProcessor {
 			analysis.setLastEntry(finalEntry);
 		}
 		 
-		context.dataCollect(revisions, analysis, filter);
+		context.identifyDependencies(revisions, analysis, filter);
 		
 		analysis.setDetails(details);		
 		new AnalysisDAO().update(analysis);
@@ -120,7 +119,7 @@ public final class DataProcessor {
 		Commit initialEntry = entryDAO.findEntryFromSequence(analysis.getProject(), (previousLastEntrySequence+1));
 		List<Long> revisions = entryDAO.getAllRevisionsWithinEntries(initialEntry, finalEntry, analysis.getMaxFilesPerRevision());
 		
-		context.dataCollect(revisions, analysis, filter);
+		context.identifyDependencies(revisions, analysis, filter);
 		
 		Long lastRevision = revisions.get(revisions.size()-1);
 		Commit lastEntry = entryDAO.findEntryFromRevision(analysis.getProject(), lastRevision);

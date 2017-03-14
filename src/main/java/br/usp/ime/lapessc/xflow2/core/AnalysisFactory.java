@@ -1,9 +1,11 @@
 package br.usp.ime.lapessc.xflow2.core;
 
 import java.util.Date;
+import java.util.List;
 
 import br.usp.ime.lapessc.xflow2.core.processors.callgraph.CallGraphAnalysis;
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
+import br.usp.ime.lapessc.xflow2.core.processors.coordreq.CoordReqsAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
@@ -14,7 +16,51 @@ import br.usp.ime.lapessc.xflow2.repository.vcs.dao.CommitDAO;
 
 public abstract class AnalysisFactory {
 	
-	public static Analysis createCoChangesAnalysis(VCSMiningProject project, 
+	public static CoordReqsAnalysis createCoordReqAnalysis(
+			CoChangesAnalysis coChangesAnalysis) 
+					throws DatabaseException, AnalysisRangeException {
+		
+		CoordReqsAnalysis coordReqAnalysis = 
+				new CoordReqsAnalysis(coChangesAnalysis);
+
+		//Sets up analysis attributes
+		
+		coordReqAnalysis.setProject(coChangesAnalysis.getProject());
+		coordReqAnalysis.setDetails("Coordination Requirements");
+		coordReqAnalysis.setDate(new Date());
+		
+		coordReqAnalysis.setTemporalConsistencyForced(
+				coChangesAnalysis.isTemporalConsistencyForced());
+		
+		coordReqAnalysis.setInterval(
+				coChangesAnalysis.getFirstEntry(), 
+				coChangesAnalysis.getLastEntry());
+		
+		coordReqAnalysis.setMaxFilesPerRevision(
+				coChangesAnalysis.getMaxFilesPerRevision());
+		
+		new AnalysisDAO().insert(coordReqAnalysis);
+		
+		return coordReqAnalysis;
+	}
+	
+	public static CoChangesAnalysis createCoChangesAnalysis(VCSMiningProject project, 
+			String details, final int supportValue, final int confidenceValue, 
+			final int maxFilesPerRevision, 
+			final boolean persistCoordinationRequirements) 
+			throws DatabaseException, AnalysisRangeException {
+		
+		List<Commit> commits = project.getCommits();
+		long startRevision = commits.get(0).getRevision();
+		long endRevision = commits.get(commits.size() - 1).getRevision();		
+		
+		return createCoChangesAnalysis(project, 
+				details, false, startRevision, endRevision, 
+				supportValue, confidenceValue, 
+				maxFilesPerRevision, persistCoordinationRequirements);
+	}
+	
+	public static CoChangesAnalysis createCoChangesAnalysis(VCSMiningProject project, 
 			String details, boolean temporalConsistencyForced, 
 			final long startRevision, final long endRevision, 
 			final int supportValue, final int confidenceValue, 
@@ -70,21 +116,21 @@ public abstract class AnalysisFactory {
 		analysis.setDate(new Date());
 		analysis.setTemporalConsistencyForced(temporalConsistencyForced);
 		
-		final Commit initialEntry;
-		final Commit finalEntry;
-		final CommitDAO entryDAO = new CommitDAO();
+		final Commit initialCommit;
+		final Commit finalCommit;
+		final CommitDAO commitDAO = new CommitDAO();
 		
 		if(analysis.isTemporalConsistencyForced()){
-			initialEntry = entryDAO.findEntryFromSequence(project, startRevision);
-			finalEntry = entryDAO.findEntryFromSequence(project, endRevision);
+			initialCommit = commitDAO.findEntryFromSequence(project, startRevision);
+			finalCommit = commitDAO.findEntryFromSequence(project, endRevision);
 		}
 		else{
-			initialEntry = entryDAO.findEntryFromRevision(project, startRevision);
-			finalEntry = entryDAO.findEntryFromRevision(project, endRevision);
+			initialCommit = commitDAO.findEntryFromRevision(project, startRevision);
+			finalCommit = commitDAO.findEntryFromRevision(project, endRevision);
 		}
 		
-		if(isIntervalValid(initialEntry, finalEntry)){
-			analysis.setInterval(initialEntry, finalEntry);
+		if(isIntervalValid(initialCommit, finalCommit)){
+			analysis.setInterval(initialCommit, finalCommit);
 		}
 	}
 	

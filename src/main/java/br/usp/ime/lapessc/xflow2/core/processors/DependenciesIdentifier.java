@@ -36,13 +36,14 @@ package br.usp.ime.lapessc.xflow2.core.processors;
 import java.util.List;
 
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
-import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.util.Filter;
 
 
 public interface DependenciesIdentifier {
 
-	public void dataCollect(List<Long> revisions, Analysis analysis, Filter filter) throws DatabaseException;
+	public void identifyDependencies(
+			List<Long> revisions, Analysis analysis, Filter filter) 
+					throws DatabaseException;
 	
 }

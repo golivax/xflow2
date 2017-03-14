@@ -10,10 +10,10 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
+import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
+import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public class StructuralCouplingCalculator {
@@ -27,7 +27,9 @@ public class StructuralCouplingCalculator {
 			getLastDependency(analysis);
 		
 		//Builds the Co-Change Matrix
-		Matrix matrix = analysis.processHistoricalDependencyMatrix(lastDependency);
+		//FIXME:
+		//Matrix matrix = analysis.processHistoricalDependencyMatrix(lastDependency);
+		IRealMatrix matrix = null;
 				
 		List<StructuralCoupling> couplingsList = 
 			getStructuralCouplinsList(analysis,fileDependencyDAO, matrix);
@@ -44,7 +46,7 @@ public class StructuralCouplingCalculator {
 	}
 
 	private DependencyGraph<FileDependencyObject,FileDependencyObject> getLastDependency(Analysis analysis) throws DatabaseException{
-		DependencyDAO dependencyDAO = new DependencyDAO();
+		DependencyGraphDAO dependencyDAO = new DependencyGraphDAO();
 		
 		DependencyGraph<FileDependencyObject, FileDependencyObject> lastDependency = 
 			dependencyDAO.findHighestDependencyByEntry(
@@ -56,11 +58,11 @@ public class StructuralCouplingCalculator {
 	}
 
 	private List<StructuralCoupling> getStructuralCouplinsList(CallGraphAnalysis analysis,
-			FileDependencyObjectDAO fileDependencyDAO, Matrix matrix)
+			FileDependencyObjectDAO fileDependencyDAO, IRealMatrix matrix)
 			throws DatabaseException {
 		
+		/**
 		
-
 		//Retrieves all file paths
 		List<String> filePathList = 
 			fileDependencyDAO.getFilePathsOrderedByStamp(analysis);
@@ -88,8 +90,9 @@ public class StructuralCouplingCalculator {
 				}
 			}
 		}
+		*/
 		
-		return couplingsList;
+		return null;
 	}
 	
 	private void insert(StructuralCoupling coupling){

@@ -49,6 +49,7 @@ import br.usp.ime.lapessc.xflow2.entity.Folder;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.entity.Resource;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
+import br.usp.ime.lapessc.xflow2.entity.Study;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.AuthorDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.FolderDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.VCSMiningProjectDAO;
@@ -64,16 +65,19 @@ import br.usp.ime.lapessc.xflow2.util.FileArtifactUtils;
 
 public class VCSMiner {
 
+	private Study study;
 	private VCSMiningProject miningProject;
 	
-	public VCSMiningProject mine(MiningSettings miningSettings, 
-			final long startCommit, final long endCommit) throws CMException, 
-			DatabaseException{
+	public VCSMiner(Study study){
+		this.study = study;
+	}
+	
+	public VCSMiningProject mine(MiningSettings miningSettings) throws 
+		CMException, DatabaseException{
 			
 		this.miningProject = createMiningProject(miningSettings);
 		
-		BufferedVCSLogParser bufferedLogParser = createParser(miningSettings,
-				startCommit, endCommit);
+		BufferedVCSLogParser bufferedLogParser = createParser(miningSettings);
 				
 		while (bufferedLogParser.hasNotEnded()){
 			List<CommitDTO> commits = bufferedLogParser.parse();
@@ -89,12 +93,11 @@ public class VCSMiner {
 	
 	}
 
-	private BufferedVCSLogParser createParser(MiningSettings miningSettings,
-			final long startCommit, final long endCommit) {
+	private BufferedVCSLogParser createParser(MiningSettings miningSettings){
 		BufferedVCSLogParser bufferedLogParser = 
 				new BufferedVCSLogParser(
-						VCSLogParserFactory.create(miningSettings), 
-						startCommit, endCommit);
+						VCSLogParserFactory.create(miningSettings));
+		
 		return bufferedLogParser;
 	}
 
@@ -104,7 +107,7 @@ public class VCSMiner {
 		Commit commit = new Commit();
 		
 		commit.setAuthor(getAuthor(commitDTO));		
-		commit.setComment(commitDTO.getComment());
+		commit.setComment(commitDTO.getComment().replaceAll("�", ""));
 		commit.setDate(commitDTO.getDate());
 		commit.setRevision(commitDTO.getRevision());
 		commit.setVcsMiningProject(miningProject);
@@ -118,9 +121,12 @@ public class VCSMiner {
 			manager.getTransaction().commit();
 		}catch(DatabaseException e){
 			e.printStackTrace();
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		
-		fixOperationType(commit);
+		//FIXME: boolear o fixOperationType
+		//fixOperationType(commit);
 		
 		//Fix parent folder for folders
 		for(Folder folder : commit.getEntryFolders()){
@@ -220,7 +226,7 @@ public class VCSMiner {
 	private VCSMiningProject createMiningProject(MiningSettings miningSettings){
 		
 		VCSMiningProject vcsMiningProject = 
-				new VCSMiningProject(miningSettings);
+				new VCSMiningProject(study,miningSettings);
 		
 		try{
 			

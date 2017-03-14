@@ -45,7 +45,7 @@ import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
-import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyDAO;
+import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.EntryMetricsDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.FileMetricsDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.MetricsDAO;
@@ -124,7 +124,7 @@ public class MetricsEvaluator {
 		for (Long revisionNumber : revisions) {
 			final Commit entry = new CommitDAO().findEntryFromRevision(analysis.getProject(), revisionNumber);
 			System.out.print("Evaluating revision "+entry.getRevision()+"\n");
-			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
+			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyGraphDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
 			if(entryDependency != null){
 				if(analysis.checkCutoffValues(entry)){
 					calculateEntryMetrics(entry);
@@ -162,7 +162,7 @@ public class MetricsEvaluator {
 		
 		for (Commit entry : entries) {
 			System.out.print("Evaluating revision "+entry.getRevision()+"\n");
-			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
+			DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency = new DependencyGraphDAO().findDependencyByEntry(analysis.getId(), entry.getId(), DependencyGraphType.TASK_DEPENDENCY.getValue());
 			if(entryDependency != null){
 				if(analysis.checkCutoffValues(entry)){
 					calculateEntryMetrics(entry);
@@ -186,7 +186,10 @@ public class MetricsEvaluator {
 
 	private void calculateGraphMetrics(final DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency) throws DatabaseException {
 		final Commit entry = entryDependency.getAssociatedEntry();
-		final JUNGGraph dependencyGraph = metricsSession.getAssociatedAnalysis().processDependencyGraph(entryDependency);
+		
+		//FIXME
+		//final JUNGGraph dependencyGraph = metricsSession.getAssociatedAnalysis().processDependencyGraph(entryDependency);
+		JUNGGraph dependencyGraph = null;
 		
 		for (DependencySet<FileDependencyObject, FileDependencyObject> dependencySet : entryDependency.getDependencies()) {
 			FileDependencyObject fileDependency = dependencySet.getSupplier();
@@ -212,7 +215,10 @@ public class MetricsEvaluator {
 	
 	private void calculateGraphMetrics2(final DependencyGraph<FileDependencyObject, FileDependencyObject> entryDependency) throws DatabaseException {
 		final Commit entry = entryDependency.getAssociatedEntry();
-		final JUNGGraph dependencyGraph = ((CoChangesAnalysis) metricsSession.getAssociatedAnalysis()).processDependencyGraph2(entryDependency);
+		
+		//FIXME
+		//final JUNGGraph dependencyGraph = ((CoChangesAnalysis) metricsSession.getAssociatedAnalysis()).processDependencyGraph2(entryDependency);
+		JUNGGraph dependencyGraph = null;
 		
 		for (JUNGVertex vertex : dependencyGraph.getGraph().getVertices()) {
 			final FileArtifact matrixFile = new ArtifactDAO().findById(FileArtifact.class, vertex.getId());
@@ -239,7 +245,10 @@ public class MetricsEvaluator {
 		}
 		
 		final Commit entry = entryDependency.getAssociatedEntry();
-		final JUNGGraph dependencyGraph = ((CoChangesAnalysis) metricsSession.getAssociatedAnalysis()).processDependencyGraph3(initialDependency, entryDependency);
+		
+		//FIXME:
+		//final JUNGGraph dependencyGraph = ((CoChangesAnalysis) metricsSession.getAssociatedAnalysis()).processDependencyGraph3(initialDependency, entryDependency);
+		JUNGGraph dependencyGraph = null;
 		
 		for (JUNGVertex vertex : dependencyGraph.getGraph().getVertices()) {
 			final FileArtifact matrixFile = new ArtifactDAO().findById(FileArtifact.class, vertex.getId());

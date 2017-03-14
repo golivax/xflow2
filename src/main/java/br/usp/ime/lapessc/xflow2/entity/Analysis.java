@@ -33,6 +33,7 @@
 
 package br.usp.ime.lapessc.xflow2.entity;
 
+import java.util.Collection;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -43,12 +44,15 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
-import br.usp.ime.lapessc.xflow2.entity.representation.matrix.Matrix;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 @Entity(name = "analysis")
@@ -87,7 +91,8 @@ public abstract class Analysis {
 	@Column(name = "COORD_REQ_PERSISTED", nullable = false)
 	private boolean coordinationRequirementPersisted;
 	
-	@OneToOne
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ANALYSIS_PROJECT", nullable = false)
 	private VCSMiningProject project;
 
@@ -194,12 +199,11 @@ public abstract class Analysis {
 	public void setTemporalConsistencyForced(final boolean temporalConsistencyForced) {
 		this.temporalConsistencyForced = temporalConsistencyForced;
 	}
-
-	public abstract JUNGGraph processEntryDependencyGraph(Commit entry, int dependencyType) throws DatabaseException;
 	
-	public abstract JUNGGraph processDependencyGraph(DependencyGraph entryDependency) throws DatabaseException;
-	
-	public abstract Matrix getDependencyMatrixForEntry(Commit entry, int dependencyType) throws DatabaseException;
+	public Collection<Commit> getCommits() throws DatabaseException{
+		AnalysisDAO analysisDAO = new AnalysisDAO();
+		return analysisDAO.getCommits(this);
+	}
 
 	public abstract boolean checkCutoffValues(Commit entry);
 

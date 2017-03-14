@@ -107,8 +107,7 @@ public class SlidingTimeWindowProcessor {
 	}
 
 	private static VCSMiningProject setupNewProject(VCSMiningProject project) {
-		VCSMiningProject timeWindowedProject = new VCSMiningProject(
-				project.getMiningSettings());
+		VCSMiningProject timeWindowedProject = new VCSMiningProject(null, project.getMiningSettings());
 		
 		try{
 			List<Author> listAuthors = new ArrayList<Author>();

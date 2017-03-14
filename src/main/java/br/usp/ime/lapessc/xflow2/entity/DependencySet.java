@@ -21,7 +21,7 @@ public class DependencySet<Client extends DependencyObject, Supplier extends Dep
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "DEPENDENCYSET_ID")
-	public long id;
+	private long id;
 	
 	@ManyToOne(cascade = {CascadeType.MERGE,CascadeType.REMOVE}, targetEntity = DependencyObject.class)
 	@JoinColumn(name = "DEPENDED_OBJECT_ID")
@@ -33,7 +33,7 @@ public class DependencySet<Client extends DependencyObject, Supplier extends Dep
 	
 	//See http://download.oracle.com/javaee/6/api/javax/persistence/MapKeyJoinColumn.html
 	@ElementCollection(targetClass = Integer.class)
-	@CollectionTable(name = "DEPENDENT_OBJECT_DEPENDENCIES", 
+	@CollectionTable(name = "dependent_object_dependencies", 
 	    joinColumns = @JoinColumn(name = "DEPENDENCY_SET_ID"))
 	@MapKeyJoinColumn(name="dependency_object", 
 			referencedColumnName = "DEPENDENCY_OBJECT_ID")
