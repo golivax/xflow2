@@ -50,4 +50,8 @@ public class DatabaseManager {
 		return em;
 	}
 	
+	public static void close(){
+		emf.close();
+	}
+	
 }
