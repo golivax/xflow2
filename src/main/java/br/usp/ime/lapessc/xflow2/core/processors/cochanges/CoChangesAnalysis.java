@@ -21,7 +21,7 @@ import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraphEdge;
 import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraphVertex;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.metrics.cochange.ChangeDependency;
 import br.usp.ime.lapessc.xflow2.metrics.cochange.ConfidencePredicate;
@@ -159,7 +159,7 @@ public class CoChangesAnalysis extends Analysis {
 		}
 		
 
-		DatabaseManager.getDatabaseSession().clear();
+		EntityManagerHelper.getEntityManager().clear();
 		return changeDeps;
 	}
 	

@@ -12,7 +12,7 @@ import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
@@ -39,7 +39,7 @@ public class StructuralCouplingCalculator {
 		//Persists Couplings
 		for(StructuralCoupling coupling : couplingsList){
 			insert(coupling);
-			DatabaseManager.getDatabaseSession().clear();
+			EntityManagerHelper.getEntityManager().clear();
 		}
 		
 		return couplingsList;
@@ -97,7 +97,7 @@ public class StructuralCouplingCalculator {
 	
 	private void insert(StructuralCoupling coupling){
 		try {
-			EntityManager manager = DatabaseManager.getDatabaseSession();
+			EntityManager manager = EntityManagerHelper.getEntityManager();
 			manager.getTransaction().begin();
 			manager.persist(coupling);
 			manager.getTransaction().commit();

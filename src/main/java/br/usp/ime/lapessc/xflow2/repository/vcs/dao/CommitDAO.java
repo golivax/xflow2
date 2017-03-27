@@ -51,7 +51,7 @@ import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.AccessDeniedException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.UnableToReachDatabaseException;
@@ -306,7 +306,7 @@ public class CommitDAO extends BaseDAO<Commit>{
 	
 	public Date getEntryDateFromRevision(final VCSMiningProject project, final long revision) throws DatabaseException {
 		
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery("SELECT entry FROM entry entry WHERE entry.revision = :revision AND entry.vcsMiningProject = :project");
 		q.setParameter("revision", revision);

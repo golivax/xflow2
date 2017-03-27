@@ -53,7 +53,7 @@ import br.usp.ime.lapessc.xflow2.entity.Study;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.AuthorDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.FolderDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.VCSMiningProjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.cm.CMException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.repository.vcs.parser.BufferedVCSLogParser;
@@ -115,7 +115,7 @@ public class VCSMiner {
 		commit.setEntryFolders(getEntryFolders(commitDTO));
 		
 		try{
-			final EntityManager manager = DatabaseManager.getDatabaseSession();
+			final EntityManager manager = EntityManagerHelper.getEntityManager();
 			manager.getTransaction().begin();
 			manager.persist(commit);
 			manager.getTransaction().commit();
@@ -144,7 +144,7 @@ public class VCSMiner {
 		}
 	
 		try{
-			final EntityManager manager = DatabaseManager.getDatabaseSession();
+			final EntityManager manager = EntityManagerHelper.getEntityManager();
 			manager.getTransaction().begin();
 			manager.flush();
 			manager.getTransaction().commit();

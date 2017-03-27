@@ -11,7 +11,7 @@ import prefuse.data.Node;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencySetDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGEdge;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGVertex;

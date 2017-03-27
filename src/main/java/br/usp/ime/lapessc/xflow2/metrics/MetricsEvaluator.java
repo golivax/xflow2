@@ -50,7 +50,7 @@ import br.usp.ime.lapessc.xflow2.entity.dao.metrics.EntryMetricsDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.FileMetricsDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.MetricsDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.ProjectMetricsDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGVertex;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -144,7 +144,7 @@ public class MetricsEvaluator {
 			//FIXME:
 			//As we don't have an application layer yet, it is necessary 
 			//to frequently clear the persistence context to avoid memory issues
-			DatabaseManager.getDatabaseSession().clear();
+			EntityManagerHelper.getEntityManager().clear();
 		}
 
 		clearCaches();

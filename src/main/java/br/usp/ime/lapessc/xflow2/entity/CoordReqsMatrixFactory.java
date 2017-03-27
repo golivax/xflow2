@@ -11,7 +11,7 @@ import br.usp.ime.lapessc.xflow2.core.processors.coordreq.CoordReqsAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.FileDependencyObjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.sparse.ApacheSparseMatrixWrapper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -46,7 +46,7 @@ public class CoordReqsMatrixFactory {
 		//FIXME:
 		//As we don't have an application layer yet, it is necessary 
 		//to frequently clear the persistence context to avoid memory issues
-		DatabaseManager.getDatabaseSession().clear();
+		EntityManagerHelper.getEntityManager().clear();
 
 		IRealMatrix ta = new ApacheSparseMatrixWrapper(numWorkers, numTasks);
 

@@ -12,7 +12,7 @@ import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.VCSMiningProjectDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.repository.vcs.dao.CommitDAO;
 
@@ -101,7 +101,7 @@ public class SlidingTimeWindowProcessor {
 			//FIXME:
 			//As we don't have an application layer yet, it is necessary 
 			//to frequently clear the persistence context to avoid memory issues
-			DatabaseManager.getDatabaseSession().clear();			
+			EntityManagerHelper.getEntityManager().clear();			
 		}
 	
 	}
@@ -126,7 +126,7 @@ public class SlidingTimeWindowProcessor {
 			//FIXME:
 			//As we don't have an application layer yet, it is necessary 
 			//to frequently clear the persistence context to avoid memory issues
-			DatabaseManager.getDatabaseSession().clear();
+			EntityManagerHelper.getEntityManager().clear();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -158,7 +158,7 @@ public class SlidingTimeWindowProcessor {
 			
 			//Detaching all objFiles (to force insertion)
 			for(FileArtifact file : window.getEntryFiles()){
-				DatabaseManager.getDatabaseSession().detach(file);
+				EntityManagerHelper.getEntityManager().detach(file);
 				file.setId(0);
 			}
 			
@@ -166,7 +166,7 @@ public class SlidingTimeWindowProcessor {
 			entryDAO.insert(window);
 			
 			//Detach the window (and associated files) from persistence context
-			DatabaseManager.getDatabaseSession().detach(window);
+			EntityManagerHelper.getEntityManager().detach(window);
 			
 		}catch(Exception e){
 			e.printStackTrace();

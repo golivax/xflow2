@@ -16,7 +16,7 @@ import br.usp.ime.lapessc.xflow2.entity.TaskAssignmentGraph;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AuthorDependencyObjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public final class CoordReqsCollector{
@@ -60,7 +60,7 @@ public final class CoordReqsCollector{
 			//FIXME:
 			//As we don't have an application layer yet, it is necessary 
 			//to frequently clear the persistence context to avoid memory issues
-			DatabaseManager.getDatabaseSession().clear();
+			EntityManagerHelper.getEntityManager().clear();
 		}
 	}
 

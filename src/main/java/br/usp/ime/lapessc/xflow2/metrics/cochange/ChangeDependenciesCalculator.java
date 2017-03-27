@@ -7,7 +7,7 @@ import javax.persistence.EntityManager;
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public class ChangeDependenciesCalculator {
@@ -17,7 +17,7 @@ public class ChangeDependenciesCalculator {
 		Set<ChangeDependency> changeDeps = analysis.getChangeDependencies();
 		System.out.println("Change deps list size: " + changeDeps.size());
 		
-		EntityManager manager = DatabaseManager.getDatabaseSession();
+		EntityManager manager = EntityManagerHelper.getEntityManager();
 		manager.getTransaction().begin();
 		
 		//Persists Co-Changes
@@ -26,7 +26,7 @@ public class ChangeDependenciesCalculator {
 		}
 		
 		manager.getTransaction().commit();
-		DatabaseManager.getDatabaseSession().clear();
+		EntityManagerHelper.getEntityManager().clear();
 		return changeDeps;
 	}
 

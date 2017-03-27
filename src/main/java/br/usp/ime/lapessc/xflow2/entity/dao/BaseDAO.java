@@ -41,7 +41,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.AccessDeniedException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.UnableToReachDatabaseException;
@@ -49,7 +49,7 @@ import br.usp.ime.lapessc.xflow2.exception.persistence.UnableToReachDatabaseExce
 public abstract class BaseDAO<T> {
 
 	protected boolean insert(final T entity) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 
 		try {
 			manager.getTransaction().begin();
@@ -72,7 +72,7 @@ public abstract class BaseDAO<T> {
 	}
 
 	protected boolean remove(final T entity) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 
 		try {
 			manager.getTransaction().begin();
@@ -95,7 +95,7 @@ public abstract class BaseDAO<T> {
 	}
 
 	protected boolean update(final T entity) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 
 		try {
 			manager.getTransaction().begin();
@@ -116,7 +116,7 @@ public abstract class BaseDAO<T> {
 	}
 
 	protected T findById(final Class<T> clazz, final long id) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		try {
 			return manager.find(clazz, id);
 		} catch (NoResultException e){
@@ -135,7 +135,7 @@ public abstract class BaseDAO<T> {
 	}
 	
 	protected T findUnique(final Class<T> clazz, final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {
@@ -159,7 +159,7 @@ public abstract class BaseDAO<T> {
 	}
 	
 	protected Object findUniqueObject(final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {
@@ -183,7 +183,7 @@ public abstract class BaseDAO<T> {
 	}
 	
 	protected Collection<T> findByQuery(final Class<T> clazz, final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {
@@ -210,7 +210,7 @@ public abstract class BaseDAO<T> {
 	}
 	
 	protected Collection<?> findObjectsByQuery(final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {
@@ -237,7 +237,7 @@ public abstract class BaseDAO<T> {
 
 
 	protected Collection<T> findAll(final Class<? extends T> myClass) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		try{
 			final StringBuilder builder = new StringBuilder("select a from ");
@@ -262,7 +262,7 @@ public abstract class BaseDAO<T> {
 
 	
 	protected long getLongValueByQuery(final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {
@@ -290,7 +290,7 @@ public abstract class BaseDAO<T> {
 	
 	
 	protected int getIntegerValueByQuery(final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {
@@ -322,7 +322,7 @@ public abstract class BaseDAO<T> {
 	
 	
 	protected double getDoubleValueByQuery(final String query, final Object[] ... parameters) throws DatabaseException {
-		final EntityManager manager = DatabaseManager.getDatabaseSession();
+		final EntityManager manager = EntityManagerHelper.getEntityManager();
 		
 		final Query q = manager.createQuery(query);
 		for (Object[] parameter : parameters) {

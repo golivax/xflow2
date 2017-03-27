@@ -11,7 +11,7 @@ import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public class TimeWindowFactory {
@@ -44,7 +44,7 @@ public class TimeWindowFactory {
 			rawFiles.addAll(entry.getEntryFiles());
 			window.addEntryNumber(entry);
 			
-			DatabaseManager.getDatabaseSession().detach(entry);
+			EntityManagerHelper.getEntityManager().detach(entry);
 		}
 		
 		//Sort by filepath

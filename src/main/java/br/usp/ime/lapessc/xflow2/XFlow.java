@@ -42,7 +42,7 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.Study;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.AnalysisDAO;
-import br.usp.ime.lapessc.xflow2.entity.database.DatabaseManager;
+import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
 import br.usp.ime.lapessc.xflow2.entity.representation.matrix.IRealMatrix;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.metrics.MetricsEvaluator;
@@ -318,7 +318,7 @@ public class XFlow {
 		
 		try{
 			
-			final EntityManager manager = DatabaseManager.getDatabaseSession();
+			final EntityManager manager = EntityManagerHelper.getEntityManager();
 			manager.getTransaction().begin();
 			manager.persist(xFlowProject);
 			manager.getTransaction().commit();
