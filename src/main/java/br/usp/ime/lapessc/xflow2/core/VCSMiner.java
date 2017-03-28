@@ -39,7 +39,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import br.usp.ime.lapessc.xflow2.connectivity.transformations.loc.LOCProcessor;
 import br.usp.ime.lapessc.xflow2.entity.Author;
@@ -48,8 +48,8 @@ import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
 import br.usp.ime.lapessc.xflow2.entity.Folder;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.entity.Resource;
-import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.Study;
+import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.AuthorDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.FolderDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.VCSMiningProjectDAO;

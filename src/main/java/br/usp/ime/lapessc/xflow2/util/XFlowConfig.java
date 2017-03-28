@@ -1,8 +1,8 @@
 package br.usp.ime.lapessc.xflow2.util;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 public class XFlowConfig {
 
@@ -14,8 +14,8 @@ public class XFlowConfig {
 
 		try{
 			
-			Configuration config = 
-					new PropertiesConfiguration("xflow.properties");
+			Configurations configurations = new Configurations();
+			Configuration config = configurations.properties("xflow.properties");
 	
 			this.vcsConfig = createVCSConfig(config);
 					

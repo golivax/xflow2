@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;

@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
