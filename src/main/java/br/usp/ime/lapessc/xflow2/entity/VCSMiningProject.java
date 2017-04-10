@@ -14,6 +14,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
+import org.apache.commons.collections4.ListUtils;
+
 @Entity(name = "vcs_mining_prj")
 public class VCSMiningProject {
 
@@ -90,6 +92,11 @@ public class VCSMiningProject {
 
 	public long getId() {
 		return id;
+	}
+
+	public List<Commit> getCommitChunk(int chunkIndex, int totalChunks) {
+		List<List<Commit>> commitChunks = ListUtils.partition(commits, (commits.size()/totalChunks) + 1);
+		return commitChunks.get(chunkIndex);	
 	}
 	
 	/**
