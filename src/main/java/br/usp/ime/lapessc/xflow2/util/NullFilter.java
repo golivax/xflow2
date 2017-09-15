@@ -22,49 +22,21 @@
  *  along with XFlow.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- *  ================
- *  DiffHandler.java
- *  ================
+ *  ===========
+ *  Filter.java
+ *  ===========
  *  
  *  Original Author: Francisco Santana;
  *  Contributor(s):  -;
  *  
  */
 
-package br.usp.ime.lapessc.xflow2.connectivity.transformations.loc;
+package br.usp.ime.lapessc.xflow2.util;
 
-import br.usp.ime.lapessc.xflow2.entity.FileVersion;
-
-public abstract class DiffHandler {
-
-	protected int addedLines;
-	protected int modifiedLines;
-	protected int deletedLines;
-	
-	public abstract void gatherFileChanges(final FileVersion file);
-
-	public int getAddedLines() {
-		return addedLines;
-	}
-
-	public void setAddedLines(final int addedLines) {
-		this.addedLines = addedLines;
-	}
-
-	public int getModifiedLines() {
-		return modifiedLines;
-	}
-
-	public void setModifiedLines(final int modifiedLines) {
-		this.modifiedLines = modifiedLines;
-	}
-
-	public int getDeletedLines() {
-		return deletedLines;
-	}
-
-	public void setDeletedLines(final int deletedLines) {
-		this.deletedLines = deletedLines;
+public class NullFilter extends Filter{
+		
+	public NullFilter(){
+		super(".*");
 	}
 	
 }

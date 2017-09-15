@@ -8,7 +8,7 @@ import java.util.ListIterator;
 
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
@@ -39,7 +39,7 @@ public class TimeWindowFactory {
 		
 		//Adds all files to the list of rawFiles 
 		//Adds revision numbers to the window
-		List<FileArtifact> rawFiles = new ArrayList<FileArtifact>();
+		List<FileVersion> rawFiles = new ArrayList<FileVersion>();
 		for (Commit entry : windowEntries){
 			rawFiles.addAll(entry.getEntryFiles());
 			window.addEntryNumber(entry);
@@ -51,18 +51,18 @@ public class TimeWindowFactory {
 		Collections.sort(rawFiles, new FileComparator());
 		
 		//Inserts a dummy file at the end of the list
-		FileArtifact dummyFile = new FileArtifact();
+		FileVersion dummyFile = new FileVersion();
 		rawFiles.add(dummyFile);
 		
-		ListIterator<FileArtifact> fileIterator = rawFiles.listIterator();
-		FileArtifact previousFile = fileIterator.next();
-		FileArtifact lastVersion = null;
+		ListIterator<FileVersion> fileIterator = rawFiles.listIterator();
+		FileVersion previousFile = fileIterator.next();
+		FileVersion lastVersion = null;
 		
 		//The list of windowFiles files
-		List<FileArtifact> windowFiles =	new ArrayList<FileArtifact>();		
+		List<FileVersion> windowFiles =	new ArrayList<FileVersion>();		
 		
 		while(fileIterator.hasNext()){
-			FileArtifact file = fileIterator.next();
+			FileVersion file = fileIterator.next();
 			
 			//If same paths, then file is a new "version" of previousFile
 			if(previousFile.getPath().equals(file.getPath())){
@@ -71,7 +71,7 @@ public class TimeWindowFactory {
 			else{
 				//At least two "versions" of the same file
 				if(lastVersion != null){
-					FileArtifact consolidatedFile = 
+					FileVersion consolidatedFile = 
 						handleFiles(previousFile,lastVersion);
 					
 					if(consolidatedFile != null){
@@ -95,7 +95,7 @@ public class TimeWindowFactory {
 		return window;
 	}
 	
-	private static FileArtifact handleFiles(FileArtifact firstFile, FileArtifact lastFile) throws DatabaseException {
+	private static FileVersion handleFiles(FileVersion firstFile, FileVersion lastFile) throws DatabaseException {
 
 		/**
 		The following rules apply to create a consolidated Entry:
@@ -114,7 +114,7 @@ public class TimeWindowFactory {
 			//[i]
 			if(lastFile.getOperationType() == 'D'){
 				//Updating the deletedOn property to refer to the last entry
-				FileArtifact referredAddedFile = new ArtifactDAO().
+				FileVersion referredAddedFile = new ArtifactDAO().
 						findAddedFileByPathUntilRevision(
 								firstFile.getCommit().getVcsMiningProject(), 
 								firstFile.getCommit().getRevision(), 
@@ -156,7 +156,7 @@ public class TimeWindowFactory {
 			//[vix]
 			if(lastFile.getOperationType() == 'D'){
 				//Updating the deletedOn property to refer to the last entry
-				FileArtifact referredAddedFile = new ArtifactDAO().
+				FileVersion referredAddedFile = new ArtifactDAO().
 						findAddedFileByPathUntilRevision(
 								firstFile.getCommit().getVcsMiningProject(), 
 								firstFile.getCommit().getRevision(), 
@@ -179,9 +179,9 @@ public class TimeWindowFactory {
 }
 
 
-class FileComparator implements Comparator<FileArtifact>{
+class FileComparator implements Comparator<FileVersion>{
 	@Override
-	public int compare(FileArtifact file, FileArtifact otherFile) {
+	public int compare(FileVersion file, FileVersion otherFile) {
 		return file.getPath().compareTo(otherFile.getPath());
 	}
 }

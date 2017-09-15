@@ -8,7 +8,7 @@ import br.usp.ime.lapessc.xflow2.core.processors.DependenciesIdentifier;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
@@ -42,7 +42,7 @@ public class CallGraphCollector implements DependenciesIdentifier {
 			System.out.print("- Processing entry: "+entry.getRevision()+" ("+revision+")\n");
 			System.out.print("* Collecting file dependencies...");
 			
-			final List<FileArtifact> studiedFiles;
+			final List<FileVersion> studiedFiles;
 			if(this.analysis.isWholeSystemSnapshot()){
 				if(this.analysis.isTemporalConsistencyForced()){
 					studiedFiles = artifactDAO.getAllAddedFilesUntilEntry(entry.getVcsMiningProject(), entry);
@@ -103,13 +103,13 @@ public class CallGraphCollector implements DependenciesIdentifier {
 		
 	}
 	
-	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherStructuralDependenciesOld(List<FileArtifact> changedFiles) throws DatabaseException {
+	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherStructuralDependenciesOld(List<FileVersion> changedFiles) throws DatabaseException {
 		FileDependencyObjectDAO dependencyObjDAO = new FileDependencyObjectDAO();
 	
 		//Builds the list of dependency objects
 		List<FileDependencyObject> dependencyObjectList = new ArrayList<FileDependencyObject>();
 		
-		for (FileArtifact changedFile : changedFiles) {
+		for (FileVersion changedFile : changedFiles) {
 			if(filter.match(changedFile.getPath())){
 				FileDependencyObject dependencyObject;
 				
@@ -131,7 +131,7 @@ public class CallGraphCollector implements DependenciesIdentifier {
 						dependencyObjDAO.findLastDependencyObjectByFilePath(analysis, changedFile.getPath());
 					
 					if (dependencyObject == null){
-						FileArtifact addedFileReference = 
+						FileVersion addedFileReference = 
 							new ArtifactDAO().findAddedFileByPathUntilEntry(
 									analysis.getProject(), 
 									changedFile.getCommit(), 

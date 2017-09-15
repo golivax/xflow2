@@ -282,6 +282,9 @@ public class XFlow {
 		*/
 		
 		try{
+			
+			
+			
 			/**
 			//Calculando coordination requirements!
 			CoChangesAnalysis coChangesAnalysis = 
@@ -329,4 +332,5 @@ public class XFlow {
 		
 		return xFlowProject;
 	}
+	
 }

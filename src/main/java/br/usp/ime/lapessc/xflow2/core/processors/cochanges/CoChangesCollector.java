@@ -12,7 +12,7 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
@@ -76,7 +76,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 		}
 	}
 
-	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherFileToFileDependencies(List<FileArtifact> changedFiles) throws DatabaseException {
+	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherFileToFileDependencies(List<FileVersion> changedFiles) throws DatabaseException {
 		
 		FileDependencyObjectDAO dependencyObjDAO = 
 				new FileDependencyObjectDAO();
@@ -85,7 +85,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 				new ArrayList<FileDependencyObject>();
 
 		//Builds the list of dependency objects
-		for (FileArtifact changedFile : changedFiles) {
+		for (FileVersion changedFile : changedFiles) {
 			if(filter.match(changedFile.getPath())){
 				
 				FileDependencyObject fileDependencyObject;
@@ -109,7 +109,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 								analysis, changedFile.getPath());
 					
 					if (fileDependencyObject == null){
-						FileArtifact addedFileReference = 
+						FileVersion addedFileReference = 
 							new ArtifactDAO().findAddedFileByPathUntilEntry(
 									analysis.getProject(), 
 									changedFile.getCommit(), 

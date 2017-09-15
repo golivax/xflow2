@@ -33,12 +33,9 @@
 
 package br.usp.ime.lapessc.xflow2.entity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -46,16 +43,9 @@ import javax.persistence.Transient;
 @Table(indexes = {
 		@Index(name="file_operation_index", columnList="FILE_OPERATION"),
 		@Index(name="file_path_index", columnList="PATH")})
-public class FileArtifact extends Resource implements Comparable<FileArtifact>{
+public class FileVersion extends ArtifactVersion implements Comparable<FileVersion>{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -9048464688545200449L;
-
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "FILE_ENTRY", nullable = false)
-	private Commit commit;
 	
 	@Column(name = "FILE_CODE", columnDefinition="LONGTEXT")
 	private String sourceCode;
@@ -102,14 +92,6 @@ public class FileArtifact extends Resource implements Comparable<FileArtifact>{
 	public void setExtesion(final String extesion) {
 		this.extesion = extesion;
 	}
-	
-	public void setCommit(final Commit commit) {
-		this.commit = commit;
-	}
-
-	public Commit getCommit() {
-		return commit;
-	}
 
 	public void setTotalLinesOfCode(final int linesOfCode) {
 		this.totalLinesOfCode = linesOfCode;
@@ -143,7 +125,7 @@ public class FileArtifact extends Resource implements Comparable<FileArtifact>{
 		this.modifiedLinesOfCode = modifiedLinesOfCode;
 	}
 
-	public int compareTo(final FileArtifact compared) {
+	public int compareTo(final FileVersion compared) {
 		if(this.id < compared.getId()){
 			return -1;
 		}
@@ -151,9 +133,5 @@ public class FileArtifact extends Resource implements Comparable<FileArtifact>{
 			return 0;
 		}
 		return 1;
-	}
-	
-	public String toString(){
-		return getPath();
 	}
 }

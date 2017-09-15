@@ -44,8 +44,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
 
+import org.apache.commons.lang3.StringUtils;
+
 @MappedSuperclass
-public abstract class Resource implements Serializable {
+public abstract class ArtifactVersion implements Serializable {
 	
 	private static final long serialVersionUID = 1569099270212350012L;
 
@@ -54,9 +56,12 @@ public abstract class Resource implements Serializable {
 	@Column(name = "RESOURCE_ID")
 	protected long id;
 	
+	@ManyToOne(optional = false)
+	private Commit commit;
+	
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "PARENT_FOLDER")
-	protected Folder parentFolder;
+	protected FolderVersion parentFolder;
 	
 	@Column(name = "RESOURCE_NAME", nullable = false)
 	private String name;
@@ -72,6 +77,29 @@ public abstract class Resource implements Serializable {
 	columnDefinition = "VARCHAR(255)")
 	private String path;
 	
+	@Column(name = "COPY_PATH", nullable = true, 
+			columnDefinition = "VARCHAR(255)")
+	private String copyPath;
+	
+	@Column(name = "COPY_REVISION", nullable = true)
+	private Long copyRevision;
+	
+	@Column(name = "PROP_MODS")
+	private boolean propMods;
+	
+	@Column(name = "TEXT_MODS")
+	private boolean textMods;
+	
+	@Column(name = "MERGEINFO_MODS")
+	private boolean mergeInfoMod;
+	
+	@Column(name = "MERGED_FROM_PATH", nullable = true, 
+			columnDefinition = "VARCHAR(255)")
+	private String mergedFromPath;
+	
+	@Column(name = "MERGED_FROM_REV", nullable = true)
+	private Long mergedFromRev;
+	
 	@ManyToOne(optional = true)
 	private Branch branch;
 	
@@ -83,14 +111,14 @@ public abstract class Resource implements Serializable {
 		this.branch = branch;
 	}
 
-	public Resource() {
+	public ArtifactVersion() {
 	}
 	
-	public Resource(final int id) {
+	public ArtifactVersion(final int id) {
 		this.id = id;
 	}
 	
-	public Resource(final String name) {
+	public ArtifactVersion(final String name) {
 		this.name = name;
 	}
 	
@@ -110,11 +138,11 @@ public abstract class Resource implements Serializable {
 		this.name = name;
 	}
 	
-	public Folder getParentFolder() {
+	public FolderVersion getParentFolder() {
 		return parentFolder;
 	}
 
-	public void setParentFolder(final Folder parent) {
+	public void setParentFolder(final FolderVersion parent) {
 		this.parentFolder = parent;
 	}
 
@@ -141,6 +169,79 @@ public abstract class Resource implements Serializable {
 	public void setPath(final String path) {
 		this.path = path;
 	}
-
 	
+	public String getRelativePath() {
+		String relativeURL = this.getCommit().getRelativeURL();
+		String relativePath = StringUtils.substringAfter(this.getPath(), relativeURL + "/");
+		return relativePath;
+	}
+
+	public boolean isPropMods() {
+		return propMods;
+	}
+
+	public void setPropMods(boolean propMods) {
+		this.propMods = propMods;
+	}
+
+	public boolean isTextMods() {
+		return textMods;
+	}
+
+	public void setTextMods(boolean textMods) {
+		this.textMods = textMods;
+	}
+
+	public boolean isMergeInfoMod() {
+		return mergeInfoMod;
+	}
+
+	public void setMergeInfoMod(boolean mergeInfoMod) {
+		this.mergeInfoMod = mergeInfoMod;
+	}
+
+	public String getMergedFromPath() {
+		return mergedFromPath;
+	}
+
+	public void setMergedFromPath(String mergedFromPath) {
+		this.mergedFromPath = mergedFromPath;
+	}
+
+	public Long getMergedFromRev() {
+		return mergedFromRev;
+	}
+
+	public void setMergedFromRev(Long mergedFromRev) {
+		this.mergedFromRev = mergedFromRev;
+	}
+
+	public String getCopyPath() {
+		return copyPath;
+	}
+
+	public void setCopyPath(String copyPath) {
+		this.copyPath = copyPath;
+	}
+
+	public Long getCopyRevision() {
+		return copyRevision;
+	}
+
+	public void setCopyRevision(Long copyRevision) {
+		this.copyRevision = copyRevision;
+	}
+
+	public Commit getCommit() {
+		return commit;
+	}
+
+	public void setCommit(Commit commit) {
+		this.commit = commit;
+	}
+	
+	public String toString(){
+		return getPath();
+	}
+
 }

@@ -41,7 +41,7 @@ import java.util.List;
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.metrics.file.FileMetricValues;
 
@@ -141,7 +141,7 @@ public class FileMetricsDAO extends MetricModelDAO<FileMetricValues>{
 		return getDoubleValueByQuery(query, parameter1);
 	}
 
-	public FileMetricValues findMetricValuesByFileUntilDate(Metrics metricsSession, FileArtifact addedFileInstance, Date limitantDate) throws DatabaseException {
+	public FileMetricValues findMetricValuesByFileUntilDate(Metrics metricsSession, FileVersion addedFileInstance, Date limitantDate) throws DatabaseException {
 		
 		final String query = "SELECT f FROM file_metrics f WHERE f.id = " +
 		"(SELECT MAX(f.id) FROM file_metrics f " +
@@ -156,7 +156,7 @@ public class FileMetricsDAO extends MetricModelDAO<FileMetricValues>{
 		return findUnique(FileMetricValues.class, query, parameter1, parameter2, parameter3);
 	}
 
-	public FileMetricValues findMetricValuesByFileUntilEntry(Metrics metricsSession, FileArtifact addedFileInstance, Commit entry) throws DatabaseException {
+	public FileMetricValues findMetricValuesByFileUntilEntry(Metrics metricsSession, FileVersion addedFileInstance, Commit entry) throws DatabaseException {
 		
 		final String query = "SELECT f FROM file_metrics f WHERE f.id = " +
 		"(SELECT MAX(f.id) FROM file_metrics f " +

@@ -40,14 +40,16 @@ import java.util.List;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import br.usp.ime.lapessc.xflow2.connectivity.transformations.loc.LOCProcessor;
+import br.usp.ime.lapessc.xflow2.entity.ArtifactVersion;
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
-import br.usp.ime.lapessc.xflow2.entity.Folder;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
+import br.usp.ime.lapessc.xflow2.entity.FolderVersion;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
-import br.usp.ime.lapessc.xflow2.entity.Resource;
 import br.usp.ime.lapessc.xflow2.entity.Study;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.AuthorDAO;
@@ -65,6 +67,8 @@ import br.usp.ime.lapessc.xflow2.util.FileArtifactUtils;
 
 public class VCSMiner {
 
+	private static final Logger logger = LogManager.getLogger();
+	
 	private Study study;
 	private VCSMiningProject miningProject;
 	
@@ -81,12 +85,11 @@ public class VCSMiner {
 				
 		while (bufferedLogParser.hasNotEnded()){
 			List<CommitDTO> commits = bufferedLogParser.parse();
-			System.out.print("Storing commits ");
+			logger.info("Storing chunk of commits in DB...");
 			for (CommitDTO commitDTO : commits){
 				buildAndStoreCommit(miningProject, commitDTO);
-				System.out.print(".");
 			}
-			System.out.println("done!");
+			logger.info("Done!");
 		}
 		
 		return miningProject;
@@ -113,6 +116,7 @@ public class VCSMiner {
 		commit.setVcsMiningProject(miningProject);
 		commit.setEntryFiles(getEntryFiles(commitDTO));
 		commit.setEntryFolders(getEntryFolders(commitDTO));
+		commit.setRelativeURL(commitDTO.getRelativeURL());
 		
 		try{
 			final EntityManager manager = EntityManagerHelper.getEntityManager();
@@ -120,25 +124,28 @@ public class VCSMiner {
 			manager.persist(commit);
 			manager.getTransaction().commit();
 		}catch(DatabaseException e){
-			e.printStackTrace();
+			logger.error(e);
 		}catch(Exception e){
-			e.printStackTrace();
+			logger.error(e);
 		}
 		
-		//FIXME: boolear o fixOperationType
+		//FIXME: Putaria com operationType e folders. Delimitar o que deve acontecer apenas para processamento parcial
+		// (isto é, quando se especifica filtros ou paths)
+		
 		//fixOperationType(commit);
 		
 		//Fix parent folder for folders
-		for(Folder folder : commit.getEntryFolders()){
-			fixFolder(folder, commit);
-		}
+		//for(FolderVersion folder : commit.getEntryFolders()){
+		//	fixFolder(folder, commit);
+		//}
 		
 		//Fix parent folder for files
-		setParentFolders(commit);
+		//setParentFolders(commit);
 					
 		setDeletedOnForFileArtifacts(commit);
 		setDeletedOnForFolders(commit);
 		
+		//TODO: Check all this LOC stuff
 		if (miningProject.getMiningSettings().isCodeDownloadEnabled()){
 			setLocMeasures(commit);
 		}
@@ -154,44 +161,84 @@ public class VCSMiner {
 		}
 	}
 	
-	private List<FileArtifact> getEntryFiles(CommitDTO dto) {
-		List<FileArtifact> files = new ArrayList<FileArtifact>();
-		for(FileArtifactDTO fileDTO : dto.getFileArtifacts()){
-			FileArtifact file = new FileArtifact();
+	private List<FileVersion> getEntryFiles(CommitDTO commitDTO) {
+		
+		String slashRelativeURL = "/" + commitDTO.getRelativeURL();
+		
+		List<FileVersion> files = new ArrayList<FileVersion>();
+		
+		for(FileArtifactDTO fileDTO : commitDTO.getFileArtifacts()){
 			
-			//If the file is replaced, we treat it as if it had been modified
-			if(fileDTO.getOperationType() == 'R') file.setOperationType('M');
-			else file.setOperationType(fileDTO.getOperationType());
+			if(fileDTO.getPath().startsWith(slashRelativeURL)) {
 			
-			file.setPath(fileDTO.getPath());
-			
-			String fileName = StringUtils.substringAfterLast(file.getPath(), "/");
-			file.setName(fileName);
-			
-			String fileExtension = StringUtils.substringAfterLast(fileName, ".");
-			file.setExtesion(fileExtension);
-			
-			file.setSourceCode(fileDTO.getSourceCode());
-			file.setDiffCode(fileDTO.getDiffCode());
-			
-			files.add(file);
+				FileVersion file = new FileVersion();
+				
+				//If the file is replaced, we treat it as if it had been modified
+				//if(fileDTO.getOperationType() == 'R') file.setOperationType('M');
+				//else file.setOperationType(fileDTO.getOperationType());
+				//FIXME: No more hacks
+				file.setOperationType(fileDTO.getOperationType());
+				
+				file.setPath(fileDTO.getPath());
+				
+				String fileName = StringUtils.substringAfterLast(file.getPath(), "/");
+				file.setName(fileName);
+				
+				String fileExtension = StringUtils.substringAfterLast(fileName, ".");
+				file.setExtesion(fileExtension);
+				
+				file.setSourceCode(fileDTO.getSourceCode());
+				file.setDiffCode(fileDTO.getDiffCode());
+				
+				//New set of attributes to better track branch creation and merging
+				file.setCopyPath(fileDTO.getCopyPath());
+				file.setCopyRevision(fileDTO.getCopyRevision());		
+				file.setPropMods(fileDTO.getPropMods());
+				file.setTextMods(fileDTO.getTextMods());
+				file.setMergeInfoMod(fileDTO.getMergeInfoMod());
+				file.setMergedFromPath(fileDTO.getMergedFromPath());			
+				file.setMergedFromRev(fileDTO.getMergedFromRev());
+				
+				files.add(file);
+			}
+			else {
+				logger.warn("Discarding file {} at commit {} as it is not part of the project", 
+						fileDTO.getPath(), commitDTO.getRevision());
+			}
 		}
 		return files;
 	}
 
-	private List<Folder> getEntryFolders(CommitDTO dto) {
+	private List<FolderVersion> getEntryFolders(CommitDTO commitDTO) {
 		
-		List<Folder> folders = new ArrayList<Folder>();
-		for(FolderArtifactDTO folderDTO : dto.getFolderArtifacts()){
-			Folder folder = new Folder();
-			folder.setPath(folderDTO.getPath());
-			folder.setOperationType(folderDTO.getOperationType());
-
-			String folderName = StringUtils.substringAfterLast(
-					folder.getPath(), "/");
-			folder.setName(folderName);	
+		String slashRelativeURL = "/" + commitDTO.getRelativeURL();
+		List<FolderVersion> folders = new ArrayList<FolderVersion>();
+		for(FolderArtifactDTO folderDTO : commitDTO.getFolderArtifacts()){
 			
-			folders.add(folder);
+			if(folderDTO.getPath().startsWith(slashRelativeURL)) {
+			
+				FolderVersion folder = new FolderVersion();
+				folder.setPath(folderDTO.getPath());
+				folder.setOperationType(folderDTO.getOperationType());
+	
+				String folderName = StringUtils.substringAfterLast(folder.getPath(), "/");
+				folder.setName(folderName);	
+				
+				//New set of attributes to better track branch creation and merging
+				folder.setCopyPath(folderDTO.getCopyPath());
+				folder.setCopyRevision(folderDTO.getCopyRevision());		
+				folder.setPropMods(folderDTO.getPropMods());
+				folder.setTextMods(folderDTO.getTextMods());
+				folder.setMergeInfoMod(folderDTO.getMergeInfoMod());
+				folder.setMergedFromPath(folderDTO.getMergedFromPath());			
+				folder.setMergedFromRev(folderDTO.getMergedFromRev());
+				
+				folders.add(folder);
+			}
+			else {
+				logger.warn("Discarding folder {} at commit {} as it is not part of the project", 
+						folderDTO.getPath(), commitDTO.getRevision());
+			}
 		}
 		return folders;
 	}
@@ -205,8 +252,7 @@ public class VCSMiner {
 			String authorName = dto.getAuthorName();
 			if (authorName == null) authorName = "null";
 			
-			author = new AuthorDAO().findAuthorByName(miningProject, 
-					authorName);
+			author = new AuthorDAO().findAuthorByName(miningProject, authorName);
 				
 			if (author == null){
 				author = new Author(authorName,dto.getDate());
@@ -216,6 +262,7 @@ public class VCSMiner {
 			else{
 				author.setLastContribution(dto.getDate());
 			}
+			
 		}catch(DatabaseException e){
 			e.printStackTrace();
 		}
@@ -242,7 +289,7 @@ public class VCSMiner {
 		return vcsMiningProject;
 	}
 	
-	private void fixFolder(Resource resource, Commit commit){
+	private void fixFolder(ArtifactVersion resource, Commit commit){
 		
 		try{
 			String path = resource.getPath();
@@ -252,17 +299,16 @@ public class VCSMiner {
 	    	if(lastSlash != 0){
 	    		String parentFolderPath = StringUtils.substringBeforeLast(path, "/");
 	    		
-	    		Folder parentFolder = new FolderDAO().findFolderByPath(
+	    		FolderVersion parentFolder = new FolderDAO().findFolderByPath(
 	    				commit.getVcsMiningProject(), parentFolderPath);
 	    		
 	    		if(parentFolder != null){
 	    			resource.setParentFolder(parentFolder);
 	    		}
 	    		else{
-	    			parentFolder = new Folder();
+	    			parentFolder = new FolderVersion();
 	    			parentFolder.setPath(parentFolderPath);
-	    			parentFolder.setName(StringUtils.substringAfterLast(
-	    					parentFolder.getPath(), "/"));
+	    			parentFolder.setName(StringUtils.substringAfterLast(parentFolder.getPath(), "/"));
 	    			parentFolder.setOperationType('A');
 	    			parentFolder.setCommit(commit);
 	    			resource.setParentFolder(parentFolder);
@@ -273,22 +319,23 @@ public class VCSMiner {
 	    		}
 	    	}
 		}catch(DatabaseException e){
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 	
 	private void fixOperationType(Commit commit){
 		try{
-			for(FileArtifact file : commit.getEntryFiles()){
+			for(FileVersion file : commit.getEntryFiles()){
 				
 				//If operationType is 'M' but the file has never been added
 				//(because the analyzed period does not include the file or 
 				//because the repo is inconsistent), then we change it to 'A'
 				if (file.getOperationType() == 'M'){
-					if (FileArtifactUtils.searchFile(
-							commit.getVcsMiningProject().getId(),
-							file.getPath()) == null){
-						
+					
+					FileVersion foundFile = 
+							FileArtifactUtils.searchFile(commit.getVcsMiningProject().getId(), file.getPath());
+					
+					if (foundFile == null){						
 						file.setOperationType('A');
 					}
 				}
@@ -301,7 +348,7 @@ public class VCSMiner {
 	
 	//seta os parents, criando os folders necessarios
 	private void setParentFolders(Commit commit){
-		for(FileArtifact file : commit.getEntryFiles()){
+		for(FileVersion file : commit.getEntryFiles()){
 			if (file.getOperationType() == 'A') {
 				fixFolder(file, commit);				
 			}
@@ -310,7 +357,7 @@ public class VCSMiner {
 	
 	private void setLocMeasures(Commit commit){
 		try{
-			for(FileArtifact file : commit.getEntryFiles()){
+			for(FileVersion file : commit.getEntryFiles()){
 				//TODO: Refatorar esse método estático
 				if (file.getOperationType() != 'D') {
 					LOCProcessor.extractCodeInfo(file);
@@ -324,11 +371,11 @@ public class VCSMiner {
 	private void setDeletedOnForFileArtifacts(Commit commit){
 				
 		try{
-			for(FileArtifact file : commit.getEntryFiles()){
+			for(FileVersion file : commit.getEntryFiles()){
 
 				if (file.getOperationType() == 'D') {
 
-					FileArtifact existingFile = FileArtifactUtils.searchFile(
+					FileVersion existingFile = FileArtifactUtils.searchFile(
 							commit.getVcsMiningProject().getId(), 
 							file.getPath());
 					
@@ -346,11 +393,11 @@ public class VCSMiner {
 	private void setDeletedOnForFolders(Commit commit) {
 
 		try{
-			for(Folder folder : commit.getEntryFolders()){
+			for(FolderVersion folder : commit.getEntryFolders()){
 
 				if (folder.getOperationType() == 'D') {
 
-					Folder existingFolder = new FolderDAO().findFolderByPath(
+					FolderVersion existingFolder = new FolderDAO().findFolderByPath(
 							commit.getVcsMiningProject(), 
 							folder.getPath());
 					

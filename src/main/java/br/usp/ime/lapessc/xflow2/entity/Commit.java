@@ -82,11 +82,11 @@ public class Commit implements Comparable<Commit>{
 	private String relativeURL;
 
 	@OneToMany(mappedBy = "commit", cascade = CascadeType.ALL)
-	private List<FileArtifact> entryFiles = new ArrayList<>();
+	private List<FileVersion> entryFiles = new ArrayList<>();
 	
 	//Esse cascade salva as folders puras (isto é, que estão no log)
 	@OneToMany(mappedBy = "commit", cascade = CascadeType.ALL)
-	private List<Folder> entryFolders = new ArrayList<>();
+	private List<FolderVersion> entryFolders = new ArrayList<>();
 	
 	public Commit() {
 		
@@ -97,7 +97,7 @@ public class Commit implements Comparable<Commit>{
 		this.date = date;
 		this.author = author;
 		this.comment = comment;
-		this.entryFiles = new ArrayList<FileArtifact>();
+		this.entryFiles = new ArrayList<FileVersion>();
 	}
 
 	
@@ -150,58 +150,58 @@ public class Commit implements Comparable<Commit>{
 		this.comment = comment;
 	}
 	
-	public List<FileArtifact> getEntryFiles() {
+	public List<FileVersion> getEntryFiles() {
 		return entryFiles;
 	}
 	
-	public void setEntryFiles(final List<FileArtifact> modifiedFiles) {
+	public void setEntryFiles(final List<FileVersion> modifiedFiles) {
 		this.entryFiles = modifiedFiles;
 		
-		for(FileArtifact entryFile : entryFiles){
+		for(FileVersion entryFile : entryFiles){
 			entryFile.setCommit(this);
 		}
 	}
 	
-	public List<Folder> getEntryFolders() {
+	public List<FolderVersion> getEntryFolders() {
 		return entryFolders;
 	}
 	
-	public void setEntryFolders(final List<Folder> entryFolders) {
+	public void setEntryFolders(final List<FolderVersion> entryFolders) {
 		this.entryFolders = entryFolders;
 		
-		for(Folder entryFolder: entryFolders){
+		for(FolderVersion entryFolder: entryFolders){
 			entryFolder.setCommit(this);
 		}
 	}
 
 	public String getListOfEntryFiles(){
 		final String listOfFiles = new String();
-		for (FileArtifact file : entryFiles) {
+		for (FileVersion file : entryFiles) {
 			listOfFiles.concat(file.getPath()+"\n");
 		}
 		
 		return listOfFiles;
 	}
 	
-	public void addFile(FileArtifact file){
+	public void addFile(FileVersion file){
 		file.setCommit(this);
 		entryFiles.add(file);
 	}
 	
-	public void addFiles(List<FileArtifact> files){
-		for (FileArtifact file : files){
+	public void addFiles(List<FileVersion> files){
+		for (FileVersion file : files){
 			file.setCommit(this);
 		}
 		entryFiles.addAll(files);
 	}
 	
-	public void addFolder(Folder folder){
+	public void addFolder(FolderVersion folder){
 		folder.setCommit(this);
 		entryFolders.add(folder);
 	}
 	
-	public void addFolders(List<Folder> folders){
-		for(Folder folder : folders){
+	public void addFolders(List<FolderVersion> folders){
+		for(FolderVersion folder : folders){
 			folder.setCommit(this);
 		}
 		entryFolders.addAll(folders);
@@ -214,7 +214,6 @@ public class Commit implements Comparable<Commit>{
 	public void setRelativeURL(String relativeURL) {
 		this.relativeURL = relativeURL;
 	}
-	
 
 	public String toString(){
 		return "Commit " + revision;
@@ -223,6 +222,38 @@ public class Commit implements Comparable<Commit>{
 	@Override
 	public int compareTo(Commit otherCommit) {
 		return this.getRevision().compareTo(otherCommit.getRevision());
+	}
+	
+	public List<ArtifactVersion> getArtifacts(){
+		List<ArtifactVersion> artifacts = new ArrayList<>();
+		artifacts.addAll(this.getEntryFiles());
+		artifacts.addAll(this.getEntryFolders());
+		return artifacts;
+	}	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((revision == null) ? 0 : revision.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Commit other = (Commit) obj;
+		if (revision == null) {
+			if (other.revision != null)
+				return false;
+		} else if (!revision.equals(other.revision))
+			return false;
+		return true;
 	}
 
 }

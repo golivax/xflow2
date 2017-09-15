@@ -29,14 +29,17 @@ public class Kbd{
 	/*
 	 * Método para ler um char
 	 */
-	public static char readChar(){
-		return readString().charAt(0);			
+	public static Character readChar(){
+		String s = readString();
+		Character c = null;
+		if(!s.isEmpty()) c = s.charAt(0);
+		return c;			
 	}
 	
 	/*
 	 * Método para ler um char e emitir mensagem
 	 */
-	public static char readChar(String m){
+	public static Character readChar(String m){
 		System.out.print(m);
 		return readChar();
 	}
@@ -45,21 +48,20 @@ public class Kbd{
 	 * Método para ler um boolean
 	 */
 	public static boolean readBoolean(){
-		boolean ret;
-		ret=false;
-		switch (readChar()) {
-			case 's':
-			case 'S':
-			case 't':
-			case 'T':
-			case 'v':
-			case 'V':
-			case 'y':
-			case 'Y':
-			case '1': 
-				ret=true;				
+		boolean ret = false;
+		Character c = readChar();
+		if(c != null) {
+			switch (c) {
+				case 't':
+				case 'T':
+				case 'y':
+				case 'Y':
+				case '1': 
+					ret=true;	
+			}
 		}
-		return (ret);			
+		
+		return ret;			
 	}
 	
 	/*

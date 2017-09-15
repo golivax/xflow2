@@ -33,13 +33,13 @@
 
 package br.usp.ime.lapessc.xflow2.util;
 
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 
 public abstract class FileArtifactUtils {
    
-    public static FileArtifact searchFile(final long projectID, final String filePath) throws DatabaseException{
+    public static FileVersion searchFile(final long projectID, final String filePath) throws DatabaseException{
         return new ArtifactDAO().findFileByPath(projectID, filePath);
     }
     

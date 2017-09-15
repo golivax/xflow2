@@ -35,7 +35,7 @@ package br.usp.ime.lapessc.xflow2.metrics.file;
 
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.representation.jung.JUNGGraph;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -45,7 +45,7 @@ public final class LOC extends FileMetricModel {
 
 	@Override
 	public final void evaluate(final JUNGGraph dependencyGraph, final long fileID, final FileMetricValues table) throws DatabaseException {
-		table.setLOC(new ArtifactDAO().findById(FileArtifact.class, fileID).getTotalLinesOfCode());
+		table.setLOC(new ArtifactDAO().findById(FileVersion.class, fileID).getTotalLinesOfCode());
 	}
 
 	@Override

@@ -43,7 +43,7 @@ import br.usp.ime.lapessc.xflow2.entity.DependencySet;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.EntryMetricsDAO;
@@ -221,7 +221,7 @@ public class MetricsEvaluator {
 		JUNGGraph dependencyGraph = null;
 		
 		for (JUNGVertex vertex : dependencyGraph.getGraph().getVertices()) {
-			final FileArtifact matrixFile = new ArtifactDAO().findById(FileArtifact.class, vertex.getId());
+			final FileVersion matrixFile = new ArtifactDAO().findById(FileVersion.class, vertex.getId());
 			final FileMetricValues fileMetricTable = new FileMetricValues();
 			fileMetricTable.setAssociatedMetricsObject(metricsSession);
 			fileMetricTable.setEntry(entry);
@@ -251,7 +251,7 @@ public class MetricsEvaluator {
 		JUNGGraph dependencyGraph = null;
 		
 		for (JUNGVertex vertex : dependencyGraph.getGraph().getVertices()) {
-			final FileArtifact matrixFile = new ArtifactDAO().findById(FileArtifact.class, vertex.getId());
+			final FileVersion matrixFile = new ArtifactDAO().findById(FileVersion.class, vertex.getId());
 			final FileMetricValues fileMetricTable = new FileMetricValues();
 			fileMetricTable.setAssociatedMetricsObject(metricsSession);
 			fileMetricTable.setEntry(entry);

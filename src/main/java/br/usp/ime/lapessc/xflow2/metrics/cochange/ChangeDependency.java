@@ -18,7 +18,7 @@ import org.apache.commons.collections4.ListUtils;
 
 import br.usp.ime.lapessc.xflow2.core.processors.cochanges.CoChangesAnalysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import net.sourceforge.jdistlib.HyperGeometric;
 
 /**
@@ -234,7 +234,7 @@ public class ChangeDependency {
 				
 		Commit lastCommitWithLHS = commitsWithLHS.get(commitsWithLHS.size()-1);
 				 
-		for (FileArtifact fileArtifact : lastCommitWithLHS.getEntryFiles()){
+		for (FileVersion fileArtifact : lastCommitWithLHS.getEntryFiles()){
 			if (fileArtifact.getPath().equals(lhs)){
 				if (fileArtifact.getOperationType() == 'D'){
 					lastCommitCandidates.add(lastCommitWithLHS.getRevision());
@@ -244,7 +244,7 @@ public class ChangeDependency {
 		
 		Commit lastCommitWithRHS = commitsWithRHS.get(commitsWithRHS.size()-1);
 		
-		for (FileArtifact fileArtifact : lastCommitWithRHS.getEntryFiles()){
+		for (FileVersion fileArtifact : lastCommitWithRHS.getEntryFiles()){
 			if (fileArtifact.getPath().equals(rhs)){
 				if (fileArtifact.getOperationType() == 'D'){
 					lastCommitCandidates.add(lastCommitWithRHS.getRevision());

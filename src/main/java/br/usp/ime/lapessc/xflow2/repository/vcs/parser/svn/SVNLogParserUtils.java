@@ -28,22 +28,17 @@ public class SVNLogParserUtils {
 		List<SVNLogEntry> logEntries = new ArrayList<SVNLogEntry>();
 		
 		List<SVNLogEntry> chronologicalOrderedEntries = 
-				(List<SVNLogEntry>) svn.log(new String[]{""}, 
-				null, 0, -1, true, true);
+				(List<SVNLogEntry>) svn.log(new String[]{""}, null, 0, -1, true, true);
 			
-		Collections.sort(chronologicalOrderedEntries, 
-				SVNLogEntryDateComparator.getInstance());
+		Collections.sort(chronologicalOrderedEntries, SVNLogEntryDateComparator.getInstance());
 	
 		int startIndex = 0;
-		while(chronologicalOrderedEntries.get(startIndex).getRevision() 
-				!= startRevision){
-			
+		while(chronologicalOrderedEntries.get(startIndex).getRevision() != startRevision){			
 			startIndex++;
 		}
 		
 		int i = startIndex;
-		while(chronologicalOrderedEntries.get(i).getRevision() 
-				!= endRevision){
+		while(chronologicalOrderedEntries.get(i).getRevision() != endRevision){
 		
 			logEntries.add(chronologicalOrderedEntries.get(i));
 			i++;

@@ -38,7 +38,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.metrics.MetricValuesTable;
 
 
@@ -59,14 +59,14 @@ public class FileMetricValues extends MetricValuesTable {
 	
 	@ManyToOne
 	@JoinColumn(name = "FILE_ID")
-	private FileArtifact fileID;
+	private FileVersion fileID;
 	
 	
-	public void setFile(FileArtifact file) {
+	public void setFile(FileVersion file) {
 		this.fileID = file;
 	}
 
-	public FileArtifact getFile() {
+	public FileVersion getFile() {
 		return fileID;
 	}
 	

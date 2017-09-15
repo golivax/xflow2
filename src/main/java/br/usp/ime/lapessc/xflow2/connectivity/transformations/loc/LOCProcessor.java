@@ -33,7 +33,7 @@
 
 package br.usp.ime.lapessc.xflow2.connectivity.transformations.loc;
 
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.repository.vcs.entities.VCSType;
@@ -44,7 +44,7 @@ public final class LOCProcessor {
 	private static LOCCounter locCounter;
 	private static DiffHandler diffHandler;
 	
-	public final static void extractCodeInfo(FileArtifact file) throws DatabaseException {
+	public final static void extractCodeInfo(FileVersion file) throws DatabaseException {
 		locCounter = LOCProcessor.identifyProgrammingLanguage(file.getExtesion());
 
 		switch (file.getOperationType()) {
@@ -60,7 +60,7 @@ public final class LOCProcessor {
 		}
 	}
 
-	private final static void countFileLOC(FileArtifact file) {
+	private final static void countFileLOC(FileVersion file) {
 		if(locCounter != null){
 			final int totalLines = locCounter.countFileLOC(file.getSourceCode());
 			file.setTotalLinesOfCode(totalLines);
@@ -76,7 +76,7 @@ public final class LOCProcessor {
 		}
 	}
 
-	private final static void countFileModifications(FileArtifact file) throws DatabaseException {
+	private final static void countFileModifications(FileVersion file) throws DatabaseException {
 		if(locCounter != null){
 			final int totalLines = locCounter.countFileLOC(file.getSourceCode());
 			final int pastFileLOC = new ArtifactDAO().getPreviousLoC(

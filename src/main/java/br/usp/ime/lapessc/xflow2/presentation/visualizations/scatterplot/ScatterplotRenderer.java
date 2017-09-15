@@ -46,7 +46,7 @@ import prefuse.visual.expression.VisiblePredicate;
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.Metrics;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.AuthorDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.metrics.EntryMetricsDAO;
@@ -581,13 +581,13 @@ public class ScatterplotRenderer implements VisualizationRenderer<ScatterplotVis
 			
 
 			final double[] maxMetricValues = new double[]{0, 0};
-			for (FileArtifact file : entry.getEntryFiles()) {
+			for (FileVersion file : entry.getEntryFiles()) {
 				final FileMetricValues fileMetricValues;
 				
 				if(metricsValues.containsKey(file.getPath())){
 					fileMetricValues = metricsValues.get(file.getPath());
 				} else {
-					FileArtifact addedFileInstance = new ArtifactDAO().findAddedFileByPathUntilEntry(this.metricsSession.getAssociatedAnalysis().getProject(), entry, file.getPath());
+					FileVersion addedFileInstance = new ArtifactDAO().findAddedFileByPathUntilEntry(this.metricsSession.getAssociatedAnalysis().getProject(), entry, file.getPath());
 					
 					if(addedFileInstance != null){
 						fileMetricValues = new FileMetricsDAO().findMetricValuesByFileUntilEntry(this.metricsSession, addedFileInstance, initialEntry);

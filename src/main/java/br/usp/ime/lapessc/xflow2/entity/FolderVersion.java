@@ -35,45 +35,31 @@ package br.usp.ime.lapessc.xflow2.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity(name = "folder")
 @Table(indexes = {
 		@Index(name="file_operation_index", columnList="FILE_OPERATION"),
 		@Index(name="file_path_index", columnList="PATH")})
-public class Folder extends Resource implements Comparable<Folder>{
+public class FolderVersion extends ArtifactVersion implements Comparable<FolderVersion>{
 
 	private static final long serialVersionUID = 8302324702620512851L;
 
-	@ManyToOne
-	@JoinColumn(name = "FOLDER_ENTRY")
-	private Commit commit;
-
-	public Folder(){
+	public FolderVersion(){
 
 	}
 
-	public Folder(final String name) {
+	public FolderVersion(final String name) {
 		super(name);
 	}
 
-	public Folder(final String name, final Folder parent) {
+	public FolderVersion(final String name, final FolderVersion parent) {
 		super(name);
 		this.parentFolder = parent;
 	}
 
-	public void setCommit(final Commit commit) {
-		this.commit = commit;
-	}
-
-	public Commit getCommit() {
-		return commit;
-	}
-
 	@Override
-	public int compareTo(final Folder compared) {
+	public int compareTo(final FolderVersion compared) {
 		if(this.id < compared.getId()){
 			return -1;
 		}

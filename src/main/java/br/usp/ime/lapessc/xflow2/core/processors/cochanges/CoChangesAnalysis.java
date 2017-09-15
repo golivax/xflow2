@@ -13,7 +13,7 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.AnalysisType;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyGraphType;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.cochange.CoChangeGraph;
@@ -120,7 +120,7 @@ public class CoChangesAnalysis extends Analysis {
 					FileDependencyObject f1 = pair.getFirst().getFileDependencyObject();
 					FileDependencyObject f2 = pair.getSecond().getFileDependencyObject();
 					
-					for(FileArtifact fileArtifact : commit.getEntryFiles()){
+					for(FileVersion fileArtifact : commit.getEntryFiles()){
 						
 						if(fileArtifact.getPath().equals(f1.getFilePath()) || 
 							fileArtifact.getPath().equals(f2.getFilePath())){

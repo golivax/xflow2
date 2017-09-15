@@ -6,10 +6,11 @@ import java.util.List;
 
 public class CommitDTO {
 
-	private long revision;	
+	private long revision;
 	private Date date;
 	private String authorName;
 	private String comment;
+	private String relativeURL;
 	
 	private List<FileArtifactDTO> fileArtifacts = 
 			new ArrayList<FileArtifactDTO>();
@@ -72,4 +73,20 @@ public class CommitDTO {
 	public void setFolderArtifacts(List<FolderArtifactDTO> folderArtifacts) {
 		this.folderArtifacts = folderArtifacts;
 	}
+	
+	public String getRelativeURL() {
+		return relativeURL;
+	}
+	
+	public void setRelativeURL(String relativeURL) {
+		this.relativeURL = relativeURL;
+	}
+	
+	public List<ArtifactDTO> getAllArtifacts(){
+		List<ArtifactDTO> allArtifacts = new ArrayList<>();
+		allArtifacts.addAll(fileArtifacts);
+		allArtifacts.addAll(folderArtifacts);
+		return allArtifacts;
+	}
+	
 }

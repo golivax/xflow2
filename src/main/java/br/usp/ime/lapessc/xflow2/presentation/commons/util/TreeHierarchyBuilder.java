@@ -39,8 +39,8 @@ import prefuse.data.Node;
 import prefuse.data.Tree;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.Folder;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FolderVersion;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.FolderDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
@@ -52,7 +52,7 @@ public class TreeHierarchyBuilder {
 	
 	public static Tree createTreeMapGraph(final Analysis analysis, Commit entry) throws DatabaseException{
 		TreeHierarchyBuilder.analysis = analysis;
-		final ArrayList<Folder> folders;
+		final ArrayList<FolderVersion> folders;
 		
 		if(analysis.isTemporalConsistencyForced()){
 			folders = new FolderDAO().findRootFoldersUntilSequence(analysis.getProject(), entry.getId());
@@ -66,13 +66,13 @@ public class TreeHierarchyBuilder {
 	    tree.addColumn("id", long.class);
 		
 		Node root = tree.addRoot();
-		for (Folder folder : folders) {
+		for (FolderVersion folder : folders) {
 			Node leaf = tree.addChild(root);
 			leaf.set("name", folder.getName());
 			leaf.set("type", "folder");
 			leaf.set("id", folder.getId());
-			final ArrayList<Folder> subfolders;
-			final ArrayList<FileArtifact> files;
+			final ArrayList<FolderVersion> subfolders;
+			final ArrayList<FileVersion> files;
 			if(analysis.isTemporalConsistencyForced()){
 				//FIXME
 				subfolders = new FolderDAO().findSubFoldersUntilSequence(folder.getId(), 1541);
@@ -91,15 +91,15 @@ public class TreeHierarchyBuilder {
 		return tree;
 	}
 	
-	private static void extractLeafs(Tree tree, Node parent, ArrayList<Folder> folders, Commit entry) throws DatabaseException {
-		for (Folder folder : folders) {
+	private static void extractLeafs(Tree tree, Node parent, ArrayList<FolderVersion> folders, Commit entry) throws DatabaseException {
+		for (FolderVersion folder : folders) {
 			Node leaf = tree.addChild(parent);
 			leaf.set("name", folder.getName());
 			leaf.set("type", "folder");
 			leaf.set("id", folder.getId());
 			
-			final ArrayList<Folder> subfolders;
-			final ArrayList<FileArtifact> files;
+			final ArrayList<FolderVersion> subfolders;
+			final ArrayList<FileVersion> files;
 			
 			if(analysis.isTemporalConsistencyForced()){
 				//FIXME
@@ -118,9 +118,9 @@ public class TreeHierarchyBuilder {
 		}
 	}
 	
-	private static void extractFiles(Tree tree, Node parent, ArrayList<FileArtifact> files){
+	private static void extractFiles(Tree tree, Node parent, ArrayList<FileVersion> files){
 		if(files != null){
-			for (FileArtifact file : files) {
+			for (FileVersion file : files) {
 				Node fileLeaf = tree.addChild(parent);
 				fileLeaf.set("name", file.getPath());
 				fileLeaf.set("type", "file");

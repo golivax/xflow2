@@ -1,5 +1,6 @@
 package br.usp.ime.lapessc.xflow2.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -58,10 +59,19 @@ public class MiningSettings {
 	
 	public MiningSettings(VCSRepository vcs, 
 			AccessCredentials accessCredentials, String details, long firstRev, 
+			long lastRev, boolean codeDownloadEnabled, 
+			boolean temporalConsistencyForced){
+				
+		this(vcs,accessCredentials,details,firstRev,lastRev,null,new ArrayList<>(),new Filter(".*"),
+				codeDownloadEnabled,temporalConsistencyForced);
+	}
+	
+	public MiningSettings(VCSRepository vcs, 
+			AccessCredentials accessCredentials, String details, long firstRev, 
 			long lastRev, Filter filter, boolean codeDownloadEnabled, 
 			boolean temporalConsistencyForced){
 		
-		this(vcs,accessCredentials,details,firstRev,lastRev,null,null,filter,
+		this(vcs,accessCredentials,details,firstRev,lastRev,null,new ArrayList<>(),filter,
 				codeDownloadEnabled,temporalConsistencyForced);
 	}
 	

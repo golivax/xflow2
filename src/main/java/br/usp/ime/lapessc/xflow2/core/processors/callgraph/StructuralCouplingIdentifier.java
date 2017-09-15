@@ -15,7 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 
 public class StructuralCouplingIdentifier {
@@ -36,7 +36,7 @@ public class StructuralCouplingIdentifier {
 			}			
 			
 			for(int i = 0; i<fileList.size(); i++){
-				FileArtifact file = fileList.get(i).getFile();
+				FileVersion file = fileList.get(i).getFile();
 				if(StringUtils.isNotBlank(file.getSourceCode())){
 					String tmpFilePath = "/tmp/" + (i+1) + ".java";					
 					createAndFillFile(tmpFilePath, file.getSourceCode());
@@ -65,7 +65,7 @@ public class StructuralCouplingIdentifier {
 					new HashMap<String, String>();
 			
 			for(int i = 0; i<fileList.size(); i++){
-				FileArtifact file = fileList.get(i).getFile();
+				FileVersion file = fileList.get(i).getFile();
 				if(StringUtils.isNotBlank(file.getSourceCode())){
 					String tmpFilePath = "/tmp/" + i + ".java";					
 					createAndFillFile(tmpFilePath, file.getSourceCode());
@@ -215,7 +215,7 @@ public class StructuralCouplingIdentifier {
 
 	
 	//FIXME: Dirty code to be removed
-	public static boolean checkStructuralCoupling(FileArtifact a, FileArtifact b){
+	public static boolean checkStructuralCoupling(FileVersion a, FileVersion b){
 		
 		String sourceCodeofA = a.getSourceCode();
 		String sourceCodeofB = b.getSourceCode();

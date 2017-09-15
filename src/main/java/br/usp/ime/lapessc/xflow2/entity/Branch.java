@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 @Entity(name = "branch")
 public class Branch {
@@ -14,13 +15,51 @@ public class Branch {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
-	private String name;
+	@Column(name = "RELATIVE_NAME")
+	private String relativeName;
 	
+	@ManyToOne(optional = false)
+	private Commit createdOn;
+	
+	@ManyToOne(optional = true)
+	private Commit deletedOn;
+
+	public Branch(){
+		
+	}
+	
+	public boolean isRoot() {
+		return this.getRelativeName().equals("[root]");
+	}
+
+	public String getRelativeName() {
+		return relativeName;
+	}
+
+	public void setRelativeName(String relativeName) {
+		this.relativeName = relativeName;
+	}
+	
+	public String getFullName() {
+		String relativeURL = this.getCreatedOn().getRelativeURL();
+		String fullName = relativeURL + "/" + relativeName;
+		return fullName;
+	}
+	
+	public Commit getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Commit createdOn) {
+		this.createdOn = createdOn;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((createdOn == null) ? 0 : createdOn.hashCode());
+		result = prime * result + ((relativeName == null) ? 0 : relativeName.hashCode());
 		return result;
 	}
 
@@ -33,24 +72,33 @@ public class Branch {
 		if (getClass() != obj.getClass())
 			return false;
 		Branch other = (Branch) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (createdOn == null) {
+			if (other.createdOn != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!createdOn.equals(other.createdOn))
+			return false;
+		if (relativeName == null) {
+			if (other.relativeName != null)
+				return false;
+		} else if (!relativeName.equals(other.relativeName))
 			return false;
 		return true;
 	}
 
-	public Branch(){
-		
+	public Commit getDeletedOn() {
+		return deletedOn;
 	}
 
-	public String getName() {
-		return name;
+	public void setDeletedOn(Commit deletedOn) {
+		this.deletedOn = deletedOn;
 	}
-
-	public void setName(String name) {
-		this.name = name;
+	
+	public boolean wasDeleted() {
+		return deletedOn != null;
+	}
+	
+	public String toString() {
+		return this.getRelativeName();
 	}
 	
 }

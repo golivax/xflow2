@@ -9,7 +9,7 @@ import org.apache.commons.lang3.time.DateUtils;
 
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.VCSMiningProjectDAO;
 import br.usp.ime.lapessc.xflow2.entity.database.EntityManagerHelper;
@@ -157,7 +157,7 @@ public class SlidingTimeWindowProcessor {
 		try{
 			
 			//Detaching all objFiles (to force insertion)
-			for(FileArtifact file : window.getEntryFiles()){
+			for(FileVersion file : window.getEntryFiles()){
 				EntityManagerHelper.getEntityManager().detach(file);
 				file.setId(0);
 			}
@@ -170,7 +170,8 @@ public class SlidingTimeWindowProcessor {
 			
 		}catch(Exception e){
 			e.printStackTrace();
-		}		
+		}
+		
 	}
 
 }

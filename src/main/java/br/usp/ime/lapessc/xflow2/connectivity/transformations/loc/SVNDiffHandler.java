@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import br.usp.ime.lapessc.xflow2.entity.FileArtifact;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 
 public final class SVNDiffHandler extends DiffHandler {
 
@@ -63,7 +63,7 @@ public final class SVNDiffHandler extends DiffHandler {
 	 */
 
 	@Override
-	public final void gatherFileChanges(FileArtifact file) {
+	public final void gatherFileChanges(FileVersion file) {
 		String[] totalCodeLines = gatherLoCChanges(file.getSourceCode(), file.getDiffCode());
 		
 		//Convert String array to String

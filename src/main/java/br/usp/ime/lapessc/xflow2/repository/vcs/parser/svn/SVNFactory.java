@@ -10,12 +10,13 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
+import br.usp.ime.lapessc.xflow2.entity.AccessCredentials;
 import br.usp.ime.lapessc.xflow2.exception.cm.svn.SVNProtocolNotSupportedException;
 
 public class SVNFactory {
 
-	public static SVNRepository create(String URI, String username, 
-			String password) throws SVNProtocolNotSupportedException{
+	public static SVNRepository create(String URI, AccessCredentials accessCredentials) 
+			throws SVNProtocolNotSupportedException{
 		
 		if (URI.startsWith("svn")){
 			SVNRepositoryFactoryImpl.setup();
@@ -30,12 +31,11 @@ public class SVNFactory {
 		SVNRepository repository = null;
 				
 		try {
-			repository = SVNRepositoryFactory.create(
-					SVNURL.parseURIEncoded(URI));
+			repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(URI));
 			
 			ISVNAuthenticationManager authManager = 
-					SVNWCUtil.createDefaultAuthenticationManager(username, 
-							password.toCharArray());
+					SVNWCUtil.createDefaultAuthenticationManager(accessCredentials.getUsername(), 
+							accessCredentials.getPassword().toCharArray());
 		
 			repository.setAuthenticationManager(authManager);
 			
