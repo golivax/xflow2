@@ -42,12 +42,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.Session;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.Projection;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
-import br.usp.ime.lapessc.xflow2.entity.DependencyGraph;
-import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
-import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
 import br.usp.ime.lapessc.xflow2.entity.dao.BaseDAO;
@@ -422,6 +427,47 @@ public class CommitDAO extends BaseDAO<Commit>{
 				analysis.getMaxFilesPerRevision()};
 		
 		return findUnique(Commit.class, query, parameter1, parameter2);
+	}
+	
+	public List<Commit> getCommitChunk(int chunkIndex, int totalChunks, long vcsMiningProjectID) throws DatabaseException{
+
+		EntityManager manager = EntityManagerHelper.getEntityManager();
+		Session session = (Session) manager.getDelegate();
+		Criteria criteria = session.createCriteria(Commit.class);
+		
+		Projection idCountProjection = Projections.countDistinct("id");
+		criteria.setProjection(idCountProjection);		
+		criteria.add(Restrictions.eq("vcsMiningProject.id", vcsMiningProjectID));
+		criteria.setFetchMode("entryFiles", FetchMode.JOIN);
+		criteria.setFetchMode("entryFolders", FetchMode.JOIN);		
+		int numCommits = ((Long)criteria.uniqueResult()).intValue();
+		
+		//Floor
+		int listSize = numCommits/totalChunks;
+		int fromIndex = chunkIndex * listSize;
+		int toIndex = fromIndex + listSize;
+		
+		//Last Chunk
+		if(chunkIndex == (totalChunks-1)){
+			toIndex = numCommits;
+		}
+		
+		int firstResult = fromIndex;
+		int maxResults = toIndex-fromIndex;
+		
+		criteria.setProjection(Projections.distinct(Projections.property("id")));
+		criteria.setFirstResult(firstResult);
+		criteria.setMaxResults(maxResults);
+		List uniqueSubList = criteria.list();
+		
+		criteria.setProjection(null);
+		criteria.setFirstResult(0);
+		criteria.setMaxResults(Integer.MAX_VALUE);
+		criteria.add(Restrictions.in("id", uniqueSubList));
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+				
+		List<Commit> commitChunk = (List)criteria.list();
+		return commitChunk;
 	}
 
 }
