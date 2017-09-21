@@ -35,7 +35,9 @@ package br.usp.ime.lapessc.xflow2.entity;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -82,11 +84,11 @@ public class Commit implements Comparable<Commit>{
 	private String relativeURL;
 
 	@OneToMany(mappedBy = "commit", cascade = CascadeType.ALL)
-	private List<FileVersion> entryFiles = new ArrayList<>();
+	private Set<FileVersion> entryFiles = new HashSet<>();
 	
 	//Esse cascade salva as folders puras (isto é, que estão no log)
 	@OneToMany(mappedBy = "commit", cascade = CascadeType.ALL)
-	private List<FolderVersion> entryFolders = new ArrayList<>();
+	private Set<FolderVersion> entryFolders = new HashSet<>();
 	
 	public Commit() {
 		
@@ -97,7 +99,7 @@ public class Commit implements Comparable<Commit>{
 		this.date = date;
 		this.author = author;
 		this.comment = comment;
-		this.entryFiles = new ArrayList<FileVersion>();
+		this.entryFiles = new HashSet<FileVersion>();
 	}
 
 	
@@ -150,11 +152,11 @@ public class Commit implements Comparable<Commit>{
 		this.comment = comment;
 	}
 	
-	public List<FileVersion> getEntryFiles() {
+	public Set<FileVersion> getEntryFiles() {
 		return entryFiles;
 	}
 	
-	public void setEntryFiles(final List<FileVersion> modifiedFiles) {
+	public void setEntryFiles(final Set<FileVersion> modifiedFiles) {
 		this.entryFiles = modifiedFiles;
 		
 		for(FileVersion entryFile : entryFiles){
@@ -162,11 +164,11 @@ public class Commit implements Comparable<Commit>{
 		}
 	}
 	
-	public List<FolderVersion> getEntryFolders() {
+	public Set<FolderVersion> getEntryFolders() {
 		return entryFolders;
 	}
 	
-	public void setEntryFolders(final List<FolderVersion> entryFolders) {
+	public void setEntryFolders(final Set<FolderVersion> entryFolders) {
 		this.entryFolders = entryFolders;
 		
 		for(FolderVersion entryFolder: entryFolders){

@@ -35,7 +35,9 @@ package br.usp.ime.lapessc.xflow2.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 
@@ -161,11 +163,11 @@ public class VCSMiner {
 		}
 	}
 	
-	private List<FileVersion> getEntryFiles(CommitDTO commitDTO) {
+	private Set<FileVersion> getEntryFiles(CommitDTO commitDTO) {
 		
 		String slashRelativeURL = "/" + commitDTO.getRelativeURL();
 		
-		List<FileVersion> files = new ArrayList<FileVersion>();
+		Set<FileVersion> files = new HashSet<FileVersion>();
 		
 		for(FileArtifactDTO fileDTO : commitDTO.getFileArtifacts()){
 			
@@ -209,10 +211,10 @@ public class VCSMiner {
 		return files;
 	}
 
-	private List<FolderVersion> getEntryFolders(CommitDTO commitDTO) {
+	private Set<FolderVersion> getEntryFolders(CommitDTO commitDTO) {
 		
 		String slashRelativeURL = "/" + commitDTO.getRelativeURL();
-		List<FolderVersion> folders = new ArrayList<FolderVersion>();
+		Set<FolderVersion> folders = new HashSet<FolderVersion>();
 		for(FolderArtifactDTO folderDTO : commitDTO.getFolderArtifacts()){
 			
 			if(folderDTO.getPath().startsWith(slashRelativeURL)) {
