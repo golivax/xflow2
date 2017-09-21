@@ -231,6 +231,10 @@ public abstract class ArtifactVersion implements Serializable {
 	public void setCopyRevision(Long copyRevision) {
 		this.copyRevision = copyRevision;
 	}
+	
+	public boolean wasCopied() {
+		return (copyPath != null || copyRevision != null); 
+	}
 
 	public Commit getCommit() {
 		return commit;
