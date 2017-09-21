@@ -1,6 +1,7 @@
 package br.usp.ime.lapessc.xflow2.core.processors.callgraph;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -8,8 +9,8 @@ import br.usp.ime.lapessc.xflow2.core.processors.DependenciesIdentifier;
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
@@ -42,12 +43,14 @@ public class CallGraphCollector implements DependenciesIdentifier {
 			System.out.print("- Processing entry: "+entry.getRevision()+" ("+revision+")\n");
 			System.out.print("* Collecting file dependencies...");
 			
-			final List<FileVersion> studiedFiles;
+			final Set<FileVersion> studiedFiles;
 			if(this.analysis.isWholeSystemSnapshot()){
 				if(this.analysis.isTemporalConsistencyForced()){
-					studiedFiles = artifactDAO.getAllAddedFilesUntilEntry(entry.getVcsMiningProject(), entry);
+					studiedFiles = new HashSet<>(
+							artifactDAO.getAllAddedFilesUntilEntry(entry.getVcsMiningProject(), entry));
 				} else {
-					studiedFiles = artifactDAO.getAllAddedFilesUntilRevision(entry.getVcsMiningProject(), entry.getRevision());
+					studiedFiles = new HashSet<>( 
+							artifactDAO.getAllAddedFilesUntilRevision(entry.getVcsMiningProject(), entry.getRevision()));
 				}
 			} else {
 				studiedFiles = entry.getEntryFiles();
@@ -103,7 +106,7 @@ public class CallGraphCollector implements DependenciesIdentifier {
 		
 	}
 	
-	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherStructuralDependenciesOld(List<FileVersion> changedFiles) throws DatabaseException {
+	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherStructuralDependenciesOld(Set<FileVersion> changedFiles) throws DatabaseException {
 		FileDependencyObjectDAO dependencyObjDAO = new FileDependencyObjectDAO();
 	
 		//Builds the list of dependency objects

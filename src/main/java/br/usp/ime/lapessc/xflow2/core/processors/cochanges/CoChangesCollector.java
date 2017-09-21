@@ -12,8 +12,8 @@ import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.DependencyObject;
 import br.usp.ime.lapessc.xflow2.entity.DependencySet;
-import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.FileDependencyObject;
+import br.usp.ime.lapessc.xflow2.entity.FileVersion;
 import br.usp.ime.lapessc.xflow2.entity.TaskDependencyGraph;
 import br.usp.ime.lapessc.xflow2.entity.dao.cm.ArtifactDAO;
 import br.usp.ime.lapessc.xflow2.entity.dao.core.DependencyGraphDAO;
@@ -76,7 +76,7 @@ public final class CoChangesCollector implements DependenciesIdentifier {
 		}
 	}
 
-	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherFileToFileDependencies(List<FileVersion> changedFiles) throws DatabaseException {
+	private Set<DependencySet<FileDependencyObject, FileDependencyObject>> gatherFileToFileDependencies(Set<FileVersion> changedFiles) throws DatabaseException {
 		
 		FileDependencyObjectDAO dependencyObjDAO = 
 				new FileDependencyObjectDAO();

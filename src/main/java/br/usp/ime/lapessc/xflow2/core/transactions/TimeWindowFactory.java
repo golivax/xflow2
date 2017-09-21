@@ -3,8 +3,10 @@ package br.usp.ime.lapessc.xflow2.core.transactions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import br.usp.ime.lapessc.xflow2.entity.Author;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
@@ -59,7 +61,7 @@ public class TimeWindowFactory {
 		FileVersion lastVersion = null;
 		
 		//The list of windowFiles files
-		List<FileVersion> windowFiles =	new ArrayList<FileVersion>();		
+		Set<FileVersion> windowFiles =	new HashSet<FileVersion>();		
 		
 		while(fileIterator.hasNext()){
 			FileVersion file = fileIterator.next();
