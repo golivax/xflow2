@@ -35,6 +35,7 @@ package br.usp.ime.lapessc.xflow2.repository.vcs.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -42,6 +43,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
@@ -52,6 +54,7 @@ import org.hibernate.criterion.Restrictions;
 
 import br.usp.ime.lapessc.xflow2.entity.Analysis;
 import br.usp.ime.lapessc.xflow2.entity.Author;
+import br.usp.ime.lapessc.xflow2.entity.Branch;
 import br.usp.ime.lapessc.xflow2.entity.Commit;
 import br.usp.ime.lapessc.xflow2.entity.MiningSettings;
 import br.usp.ime.lapessc.xflow2.entity.VCSMiningProject;
@@ -427,6 +430,35 @@ public class CommitDAO extends BaseDAO<Commit>{
 				analysis.getMaxFilesPerRevision()};
 		
 		return findUnique(Commit.class, query, parameter1, parameter2);
+	}
+	
+	public Commit getPreviousCommitInBranch(Branch branch, Commit commit) throws DatabaseException {
+		
+		String queryFile = "FROM entry e WHERE e.revision = "
+				+ "(SELECT MAX(c.revision) FROM file f "
+				+ "JOIN f.commit AS c WHERE "
+				+ "f.branch.id = :branchID AND "
+				+ "c.revision < :commitRev)";
+		
+		String queryFolder = "FROM entry e WHERE e.revision = "
+				+ "(SELECT MAX(c.revision) FROM folder f "
+				+ "JOIN f.commit AS c WHERE "
+				+ "f.branch.id = :branchID AND "
+				+ "c.revision < :commitRev)";
+		
+		
+		final Object[] parameter1 = new Object[]{"branchID", branch.getId()};
+		final Object[] parameter2 = new Object[]{"commitRev",commit.getRevision()};
+		
+		Commit commitForFile = findUnique(Commit.class, queryFile, parameter1, parameter2);
+		Commit commitForFolder = findUnique(Commit.class, queryFolder, parameter1, parameter2);
+		
+		List<Commit> commits = new ArrayList<>();
+		if(commitForFile != null) commits.add(commitForFile);
+		if(commitForFolder != null) commits.add(commitForFolder);
+		
+		Commit previousCommitInBrach = commits.isEmpty() ? null : Collections.max(commits);
+		return previousCommitInBrach;		
 	}
 	
 	public List<Commit> getCommitChunk(int chunkIndex, int totalChunks, long vcsMiningProjectID) throws DatabaseException{

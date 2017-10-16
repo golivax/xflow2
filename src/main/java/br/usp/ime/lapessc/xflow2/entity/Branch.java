@@ -28,6 +28,10 @@ public class Branch {
 		
 	}
 	
+	public Long getId() {
+		return id;
+	}
+	
 	public boolean isRoot() {
 		return this.getRelativeName().equals("[root]");
 	}
@@ -40,6 +44,10 @@ public class Branch {
 		this.relativeName = relativeName;
 	}
 	
+	/**
+	 * Includes the relative URL
+	 * @return
+	 */
 	public String getFullName() {
 		String relativeURL = this.getCreatedOn().getRelativeURL();
 		String fullName = relativeURL + "/" + relativeName;
