@@ -43,7 +43,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
@@ -64,9 +65,10 @@ import br.usp.ime.lapessc.xflow2.exception.persistence.AccessDeniedException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.DatabaseException;
 import br.usp.ime.lapessc.xflow2.exception.persistence.UnableToReachDatabaseException;
 
-
 public class CommitDAO extends BaseDAO<Commit>{
 
+	private static final Logger logger = LogManager.getLogger();
+	
 	@Override
 	public Commit findById(final Class<Commit> clazz, final long id) throws DatabaseException {
 		return super.findById(clazz, id);
@@ -467,12 +469,16 @@ public class CommitDAO extends BaseDAO<Commit>{
 		Session session = (Session) manager.getDelegate();
 		Criteria criteria = session.createCriteria(Commit.class);
 		
+		//1) Here we recover the total number of commits for this project
+		logger.debug("Running query 1/3: discovering total number of commits");		
 		Projection idCountProjection = Projections.countDistinct("id");
 		criteria.setProjection(idCountProjection);		
 		criteria.add(Restrictions.eq("vcsMiningProject.id", vcsMiningProjectID));
-		criteria.setFetchMode("entryFiles", FetchMode.JOIN);
-		criteria.setFetchMode("entryFolders", FetchMode.JOIN);		
-		int numCommits = ((Long)criteria.uniqueResult()).intValue();
+		int numCommits = ((Long)criteria.uniqueResult()).intValue();		
+		logger.debug("Done. Found {} commits", numCommits);
+
+		//2) Then we do the pagination, but on the ids only		
+		logger.debug("Running query 2/3: discovering which commits should be retrieved (pagination)");	
 		
 		//Floor
 		int listSize = numCommits/totalChunks;
@@ -491,14 +497,29 @@ public class CommitDAO extends BaseDAO<Commit>{
 		criteria.setFirstResult(firstResult);
 		criteria.setMaxResults(maxResults);
 		List uniqueSubList = criteria.list();
+		logger.debug("Done. {} commits will be retrieved", uniqueSubList.size());
 		
+		//3) Now that we know which commits should be returned, we perform the actual select		
+		logger.debug("Running query 3/3");
+
+		//Reset the projection
 		criteria.setProjection(null);
 		criteria.setFirstResult(0);
 		criteria.setMaxResults(Integer.MAX_VALUE);
+
+		//Indicate we want to retrieve these eagerly
+		criteria.setFetchMode("entryFiles", FetchMode.JOIN);
+		criteria.setFetchMode("entryFolders", FetchMode.JOIN);		
+
+		//Indicate the commits we want to retrieve (as a result of the pagination query)
 		criteria.add(Restrictions.in("id", uniqueSubList));
+				
+		//As we are fetching eagerly, we need to do post-processing to remove duplicate commit entries
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 				
 		List<Commit> commitChunk = (List)criteria.list();
+		logger.debug("Done");
+		
 		return commitChunk;
 	}
 
